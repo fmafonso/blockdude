@@ -11,7 +11,10 @@ module LI12122 (
     -- ** Mapas
   Mapa , Peca(..),
     -- ** Jogo
-  Jogo(..) , Jogador(..) , Movimento(..)
+  Jogo(..) , Jogador(..) , Movimento(..),
+    -- * Funções auxiliares
+  insertionSort,
+  maioresCoordenadas
   ) where
 
 -- | Par de coordenadas de uma posição no 'Mapa'.
@@ -55,3 +58,31 @@ data Movimento
   | Trepar -- ^ a ação de trepar uma caixa ou bloco
   | InterageCaixa -- ^ a ação de pegar ou largar uma caixa
   deriving (Show, Read, Eq, Ord)
+
+
+
+-------------------------------------------------------------------------------
+--                             FUNÇÕES AUXILIARES                            --
+-------------------------------------------------------------------------------
+
+-- | ordena uma lista usando o algoritmo insertion sort
+insertionSort :: Ord a => [a] -> (a -> a -> Bool) -> [a]
+insertionSort [a] _ = [a]
+insertionSort (x:y:t) f = insert x (insertionSort (y:t) f) f
+
+-- | função auxiliar do insertion sort
+insert :: Ord a => a -> [a] -> (a -> a -> Bool) -> [a]
+insert m [] _ = [m]
+insert m (x:xs) f | f m x = x:insert m xs f
+                  | otherwise = m:x:xs
+
+
+-- | Calcula o maior par de coordenadas (x, y)
+-- | NOTA: as coordenadas x e y podem vir de peças diferentes
+maioresCoordenadas :: [(Peca, Coordenadas)] -> Coordenadas
+maioresCoordenadas [(p,c)] = c
+maioresCoordenadas ((p, (x1, y1)):(_, (x2, y2)):t)
+    | x1 > x2 && y1 > y2 = maioresCoordenadas ((p, (x1, y1)):t)
+    | x1 > x2 = maioresCoordenadas ((p, (x1, y2)):t)
+    | y1 > y2 = maioresCoordenadas ((p, (x2, y1)):t)
+    | otherwise = maioresCoordenadas ((p, (x2, y2)):t)
