@@ -11,7 +11,7 @@ module Tarefa1_2021li1g032 where
 import LI12122
 
 validaPotencialMapa :: [(Peca, Coordenadas)] -> Bool
-validaPotencialMapa pecas = c1 && c2
+validaPotencialMapa pecas = c1 && c2 && c3 && c4 && c5
     where
         pecasOrdColuna = insertionSort pecas comparaPorCoordenadasXY
         maiores = maioresCoordenadas pecas
