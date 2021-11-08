@@ -14,7 +14,8 @@ module LI12122 (
   Jogo(..) , Jogador(..) , Movimento(..),
     -- * Funções auxiliares
   insertionSort,
-  maioresCoordenadas
+  maioresCoordenadas,
+  acederPeca
   ) where
 
 -- | Par de coordenadas de uma posição no 'Mapa'.
@@ -73,8 +74,9 @@ insertionSort (x:y:t) f = insert x (insertionSort (y:t) f) f
 -- | função auxiliar do insertion sort
 insert :: Ord a => a -> [a] -> (a -> a -> Bool) -> [a]
 insert m [] _ = [m]
-insert m (x:xs) f | f m x = x:insert m xs f
-                  | otherwise = m:x:xs
+insert m (x:xs) f
+    | f m x = x:insert m xs f
+    | otherwise = m:x:xs
 
 
 -- | Calcula o maior par de coordenadas (x, y)
@@ -86,3 +88,14 @@ maioresCoordenadas ((p, (x1, y1)):(_, (x2, y2)):t)
     | x1 > x2 = maioresCoordenadas ((p, (x1, y2)):t)
     | y1 > y2 = maioresCoordenadas ((p, (x2, y1)):t)
     | otherwise = maioresCoordenadas ((p, (x2, y2)):t)
+
+
+-- | Devolve a peça correspondente às coordenadas no mapa
+acederPeca :: Mapa -> Coordenadas -> Peca
+acederPeca mapa coordPeca = acederPecaAux mapa coordPeca (0, 0)
+
+acederPecaAux :: Mapa -> Coordenadas -> Coordenadas -> Peca
+acederPecaAux ([]:t) coordPeca atuais = acederPecaAux t coordPeca (0, snd atuais + 1)
+acederPecaAux ((h : hs) : t) coordPeca atuais
+    | coordPeca == atuais = h
+    | otherwise = acederPecaAux (hs:t) coordPeca (fst atuais + 1, snd atuais)
