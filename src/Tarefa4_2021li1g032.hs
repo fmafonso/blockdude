@@ -9,17 +9,39 @@ Módulo para a realização da Tarefa 4 do projeto de LI1 em 2021/22.
 module Tarefa4_2021li1g032 where
 
 import LI12122
+import Tarefa2_2021li1g032 (constroiMapa, desconstroiMapa)
 
 moveJogador :: Jogo -> Movimento -> Jogo
-moveJogador (Jogo mapa (Jogador c _ b)) AndarDireita = undefined
+moveJogador (Jogo mapa (Jogador c d b)) AndarDireita
+    | caiD == False && podeAD == True = Jogo mapa (Jogador (fst c + 1, snd c) Este b)
+    | caiD == True && podeAD == True = Jogo mapa (Jogador (fst c + 1, snd c + caiQD) Este b)
+    | otherwise = (Jogo mapa (Jogador c d b))
+        where
+            caiD = cai (Jogo mapa (Jogador c d b)) AndarDireita
+            podeAD = haEspacoAndar (Jogo mapa (Jogador c d b)) AndarDireita
+            caiQD = caiQuanto (Jogo mapa (Jogador c d b)) AndarDireita
+moveJogador (Jogo mapa (Jogador c d b)) AndarEsquerda
+    | caiE == False && podeAE == True = Jogo mapa (Jogador (fst c - 1, snd c) Oeste b)
+    | caiE == True && podeAE == True = Jogo mapa (Jogador (fst c - 1, snd c + caiQE) Oeste b)
+    | otherwise = (Jogo mapa (Jogador c d b))
+        where
+            caiE = cai (Jogo mapa (Jogador c d b)) AndarEsquerda
+            podeAE = haEspacoAndar (Jogo mapa (Jogador c d b)) AndarEsquerda
+            caiQE = caiQuanto (Jogo mapa (Jogador c d b)) AndarEsquerda
+moveJogador (Jogo mapa (Jogador c d b)) Trepar
+    | espacoT == True && d == Este = Jogo mapa (Jogador (fst c + 1, snd c - 1) d b)
+    | espacoT == True && d == Oeste = Jogo mapa (Jogador (fst c - 1, snd c - 1) d b)
+    | otherwise = (Jogo mapa (Jogador c d b))
+        where
+            espacoT = haEspacoTrepar (Jogo mapa (Jogador c d b))
 
 
 calculaCoordenadas :: Jogo -> Movimento -> Coordenadas
 calculaCoordenadas (Jogo _ (Jogador c _ _)) InterageCaixa = c
 calculaCoordenadas (Jogo _ (Jogador (x, y) _ _)) AndarDireita = (x+1, y)
 calculaCoordenadas (Jogo _ (Jogador (x, y) _ _)) AndarEsquerda = (x-1, y)
-calculaCoordenadas (Jogo _ (Jogador (x, y) Este _)) Trepar = (x+1, y+1)
-calculaCoordenadas (Jogo _ (Jogador (x, y) Oeste _)) Trepar = (x-1, y+1)
+calculaCoordenadas (Jogo _ (Jogador (x, y) Este _)) Trepar = (x+1, y-1)
+calculaCoordenadas (Jogo _ (Jogador (x, y) Oeste _)) Trepar = (x-1, y-1)
 
 calculaDirecao :: Jogo -> Movimento -> Direcao
 calculaDirecao _ AndarDireita = Este
@@ -37,10 +59,10 @@ haEspacoAndar (Jogo [[]] _) _ = False
 haEspacoAndar (Jogo [[x]] _) _ = False
 haEspacoAndar (Jogo m (Jogador (x, y) _ b)) AndarDireita
     | b == False = acederPeca m (x+1, y) == Vazio
-    | otherwise = (acederPeca m (x+1 , y) == Vazio && acederPeca m (x+1, y+1) == Vazio)
+    | otherwise = acederPeca m (x+1 , y) == Vazio && acederPeca m (x+1, y-1) == Vazio
 haEspacoAndar (Jogo m (Jogador (x, y) _ b)) AndarEsquerda
     | b == False = acederPeca m (x-1, y) == Vazio
-    | otherwise = (acederPeca m (x-1 , y) == Vazio && acederPeca m (x-1, y+1) == Vazio)
+    | otherwise = acederPeca m (x-1 , y) == Vazio && acederPeca m (x-1, y-1) == Vazio
 
 -- | Verifica se é possivel trepar o bloco ou caixa
 haEspacoTrepar :: Jogo -> Bool
@@ -65,6 +87,27 @@ haEspacoTrepar (Jogo m (Jogador (x, y) Oeste b))
             pecaCimaEsquerda2x = acederPeca m (x-1, y-2)
             pecaCima = acederPeca m (x, y-1)
             pecaCima2x = acederPeca m (x, y-1)
+
+-- | Calcula quantas posições ele cai
+caiQuanto :: Jogo -> Movimento -> Int
+caiQuanto (Jogo m (Jogador (x, y) d b)) movimento
+    | cai (Jogo m (Jogador (x, y) d b)) movimento == True = 1 + caiQuanto (Jogo m (Jogador (x, y+1) d b)) movimento
+    | otherwise = 0
+
+
+-- | Verifica se o jogador cai após o movimento
+cai :: Jogo -> Movimento -> Bool
+cai (Jogo m (Jogador (x, y) _ _)) AndarDireita  = acederPeca m (x+1, y+1) == Vazio
+cai (Jogo m (Jogador (x, y) _ _)) AndarEsquerda  = acederPeca m (x-1, y+1) == Vazio
+cai _ _ = False
+
+
+
+-- .>.
+-- .x.
+-- .X.
+-- xxx
+
 
 -- | Executa uma lista de movimentos
 correrMovimentos :: Jogo -> [Movimento] -> Jogo
