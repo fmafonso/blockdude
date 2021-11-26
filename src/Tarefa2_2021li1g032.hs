@@ -13,17 +13,18 @@ import LI12122
 constroiMapa :: [(Peca, Coordenadas)] -> Mapa
 constroiMapa pecas = constroiMapaAux pecasOrdLinha maiores (0,0)
     where
+        semVazios = removeVazios pecas
         pecasOrdLinha = insertionSort pecas comparaPorCoordenadasYX
         maiores = maioresCoordenadas pecas
 
--- | Comparator para peças no mapa com base nas coordenadas
--- | com prioridade para a coordenada y
-comparaPorCoordenadasYX :: (Peca, Coordenadas) -> (Peca, Coordenadas) -> Bool
-comparaPorCoordenadasYX (_, (x1, y1)) (_, (x2,y2)) = y1 > y2 || y1 == y2 && x1 > x2
 
 -- | Constroi um mapa com base na lista de peças e as suas dimensões
--- | NOTAS: a lista deve estar ordenada por cordenadas com prioridade para o y
--- |        a função serve-se do par de coordenadas atuais para a chamada recursiva
+--
+--   __NOTAS__:
+--
+--   * a lista deve estar ordenada por linhas
+--
+--   * a função serve-se do par de coordenadas atuais para a chamada recursiva
 constroiMapaAux :: [(Peca, Coordenadas)] -> Coordenadas -> Coordenadas -> Mapa
 constroiMapaAux [] _ _ = []
 constroiMapaAux ((p,c):t) maiores atuais
@@ -31,6 +32,17 @@ constroiMapaAux ((p,c):t) maiores atuais
     | fst atuais == fst maiores = insereNoMapa (constroiMapaAux t maiores (0, snd atuais + 1)) Vazio maiores atuais
     | c == atuais = insereNoMapa (constroiMapaAux t maiores (fst atuais + 1, snd atuais)) p maiores atuais
     | otherwise = insereNoMapa (constroiMapaAux ((p,c):t) maiores (fst atuais + 1, snd atuais)) Vazio maiores atuais
+
+-- | Calcula o maior par de coordenadas (x, y)
+--
+--   __NOTA__: as coordenadas x e y podem vir de peças diferentes
+maioresCoordenadas :: [(Peca, Coordenadas)] -> Coordenadas
+maioresCoordenadas [(p,c)] = c
+maioresCoordenadas ((p, (x1, y1)):(_, (x2, y2)):t)
+    | x1 > x2 && y1 > y2 = maioresCoordenadas ((p, (x1, y1)):t)
+    | x1 > x2 = maioresCoordenadas ((p, (x1, y2)):t)
+    | y1 > y2 = maioresCoordenadas ((p, (x2, y1)):t)
+    | otherwise = maioresCoordenadas ((p, (x2, y2)):t)
 
 -- | Insere uma peça no mapa
 insereNoMapa :: Mapa -> Peca -> Coordenadas -> Coordenadas -> Mapa

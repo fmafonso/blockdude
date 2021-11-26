@@ -9,32 +9,47 @@ Módulo para a realização da Tarefa 4 do projeto de LI1 em 2021/22.
 module Tarefa4_2021li1g032 where
 
 import LI12122
-import Tarefa2_2021li1g032 (constroiMapa, desconstroiMapa)
+import Tarefa3_2021li1g032
+
+-- TODO: pode largar caixa em cima 
 
 moveJogador :: Jogo -> Movimento -> Jogo
-moveJogador (Jogo mapa (Jogador c d b)) AndarDireita
-    | caiD == False && podeAD == True = Jogo mapa (Jogador (fst c + 1, snd c) Este b)
-    | caiD == True && podeAD == True = Jogo mapa (Jogador (fst c + 1, snd c + caiQD) Este b)
-    | otherwise = (Jogo mapa (Jogador c d b))
-        where
-            caiD = cai (Jogo mapa (Jogador c d b)) AndarDireita
-            podeAD = haEspacoAndar (Jogo mapa (Jogador c d b)) AndarDireita
-            caiQD = caiQuanto (Jogo mapa (Jogador c d b)) AndarDireita
-moveJogador (Jogo mapa (Jogador c d b)) AndarEsquerda
-    | caiE == False && podeAE == True = Jogo mapa (Jogador (fst c - 1, snd c) Oeste b)
-    | caiE == True && podeAE == True = Jogo mapa (Jogador (fst c - 1, snd c + caiQE) Oeste b)
-    | otherwise = (Jogo mapa (Jogador c d b))
-        where
-            caiE = cai (Jogo mapa (Jogador c d b)) AndarEsquerda
-            podeAE = haEspacoAndar (Jogo mapa (Jogador c d b)) AndarEsquerda
-            caiQE = caiQuanto (Jogo mapa (Jogador c d b)) AndarEsquerda
-moveJogador (Jogo mapa (Jogador c d b)) Trepar
-    | espacoT == True && d == Este = Jogo mapa (Jogador (fst c + 1, snd c - 1) d b)
-    | espacoT == True && d == Oeste = Jogo mapa (Jogador (fst c - 1, snd c - 1) d b)
-    | otherwise = (Jogo mapa (Jogador c d b))
-        where
-            espacoT = haEspacoTrepar (Jogo mapa (Jogador c d b))
+moveJogador jogo AndarDireita = moveDireita jogo
+moveJogador jogo AndarEsquerda = moveEsquerda jogo
+moveJogador jogo Trepar = trepa jogo
+moveJogador jogo InterageCaixa = interage jogo
 
+
+-- | Move o jogador para a direita
+moveDireita :: Jogo -> Jogo
+moveDireita (Jogo mapa (Jogador (x, y) d b))
+    | haEspacoAndarDireita (Jogo mapa (Jogador (x, y) d b)) = (Jogo mapa (Jogador (x+1, y + movimentoVertical) Este b))
+    | otherwise = (Jogo mapa (Jogador (x, y) Este b))
+    where movimentoVertical = caiQuanto (Jogo mapa (Jogador (x+1, y) d b))
+
+-- | Move o jogador para a esquerda
+moveEsquerda :: Jogo -> Jogo
+moveEsquerda (Jogo mapa (Jogador (x, y) d b))
+    | haEspacoAndarEsquerda (Jogo mapa (Jogador (x, y) d b)) = (Jogo mapa (Jogador (x-1, y + movimentoVertical) Oeste b))
+    | otherwise = (Jogo mapa (Jogador (x, y) Oeste b))
+    where movimentoVertical = caiQuanto (Jogo mapa (Jogador (x-1, y) d b))
+
+-- | Executa o movimento Trepar
+trepa :: Jogo -> Jogo
+trepa (Jogo mapa (Jogador (x, y) d b))
+    | podeTrepar && d == Este = (Jogo mapa (Jogador (x+1, y-1) d b))
+    | podeTrepar = (Jogo mapa (Jogador (x-1, y-1) d b))
+    | otherwise = (Jogo mapa (Jogador (x, y) d b))
+    where podeTrepar = haEspacoTrepar (Jogo mapa (Jogador (x, y) d b))
+-- | Pega ou larga a caixa
+interage :: Jogo -> Jogo
+interage (Jogo mapa (Jogador (x, y) d b))
+    | not valido = (Jogo mapa (Jogador (x, y) d b))
+    | d == Este && b = Jogo (inserePeca mapa Caixa (x+1, y)) (Jogador (x, y) d False)
+    | d == Este = Jogo (inserePeca mapa Vazio (x+1, y)) (Jogador (x, y) d True)
+    | b = Jogo (inserePeca mapa Caixa (x-1, y)) (Jogador (x, y) d False)
+    | otherwise = Jogo (inserePeca mapa Vazio (x+1, y)) (Jogador (x, y) d True)
+    where valido = podeInteragir (Jogo mapa (Jogador (x, y) d b))
 
 calculaCoordenadas :: Jogo -> Movimento -> Coordenadas
 calculaCoordenadas (Jogo _ (Jogador c _ _)) InterageCaixa = c
@@ -52,62 +67,60 @@ calculaTemCaixa :: Jogo -> Movimento -> Bool
 calculaTemCaixa (Jogo _ (Jogador _ _ b)) InterageCaixa = not b
 calculaTemCaixa (Jogo _ (Jogador _ _ b)) _ = b
 
--- | Verifica se é possivel andar uma posição
-haEspacoAndar :: Jogo -> Movimento -> Bool
-haEspacoAndar (Jogo [] _) _ = False
-haEspacoAndar (Jogo [[]] _) _ = False
-haEspacoAndar (Jogo [[x]] _) _ = False
-haEspacoAndar (Jogo m (Jogador (x, y) _ b)) AndarDireita
-    | b == False = acederPeca m (x+1, y) == Vazio
-    | otherwise = acederPeca m (x+1 , y) == Vazio && acederPeca m (x+1, y-1) == Vazio
-haEspacoAndar (Jogo m (Jogador (x, y) _ b)) AndarEsquerda
-    | b == False = acederPeca m (x-1, y) == Vazio
-    | otherwise = acederPeca m (x-1 , y) == Vazio && acederPeca m (x-1, y-1) == Vazio
+-- | Verifica se é possivel andar para a direita
+haEspacoAndarDireita :: Jogo -> Bool
+haEspacoAndarDireita (Jogo [[x]] _) = False
+haEspacoAndarDireita (Jogo mapa (Jogador (x, y) _ b))
+    | b = acederPeca mapa (x+1 , y) == Vazio && acederPeca mapa (x+1, y-1) == Vazio
+    | otherwise = acederPeca mapa (x+1, y) == Vazio
+
+-- | Verifica se é possivel andar para a esquerda
+haEspacoAndarEsquerda :: Jogo -> Bool
+haEspacoAndarEsquerda (Jogo [[x]] _) = False
+haEspacoAndarEsquerda (Jogo mapa (Jogador (x, y) _ b))
+    | b = acederPeca mapa (x-1 , y) == Vazio && acederPeca mapa (x-1, y-1) == Vazio
+    | otherwise = acederPeca mapa (x-1, y) == Vazio
 
 -- | Verifica se é possivel trepar o bloco ou caixa
 haEspacoTrepar :: Jogo -> Bool
-haEspacoTrepar (Jogo [] _) = False
-haEspacoTrepar (Jogo [[]] _) = False
-haEspacoTrepar (Jogo m (Jogador (x, y) Este b))
-    | b == False = (pecaDireita == Bloco || pecaDireita == Caixa) && pecaCimaDireita == Vazio && pecaCima == Vazio
-    | otherwise = (pecaDireita == Bloco || pecaDireita == Caixa) && pecaCimaDireita2x == Vazio && pecaCima2x == Vazio
-        where 
-            pecaDireita = acederPeca m (x+1, y)
-            pecaCimaDireita = acederPeca m (x+1, y-1)
-            pecaCimaDireita2x = acederPeca m (x+1, y-2)
-            pecaCima = acederPeca m (x, y-1)
-            pecaCima2x = acederPeca m (x, y-2)
+haEspacoTrepar (Jogo m (Jogador (x, y) d b))
+    | b && d == Este = (pecaDireita == Bloco || pecaDireita == Caixa) && pecaCimaDireita2x == Vazio && pecaCima2x == Vazio
+    | d == Este = (pecaDireita == Bloco || pecaDireita == Caixa) && pecaCimaDireita == Vazio && pecaCima == Vazio
+    | b && d == Oeste = (pecaEsquerda == Bloco || pecaEsquerda == Caixa) && pecaCimaEsquerda2x == Vazio && pecaCima2x == Vazio
+    | otherwise = (pecaEsquerda == Bloco || pecaEsquerda == Caixa) && pecaCimaEsquerda == Vazio && pecaCima == Vazio
+    where
+        pecaDireita = acederPeca m (x+1, y)
+        pecaCimaDireita = acederPeca m (x+1, y-1)
+        pecaCimaDireita2x = acederPeca m (x+1, y-2)
+        pecaEsquerda = acederPeca m (x-1, y)
+        pecaCimaEsquerda = acederPeca m (x-1, y-1)
+        pecaCimaEsquerda2x = acederPeca m (x-1, y-2)
+        pecaCima = acederPeca m (x, y-1)
+        pecaCima2x = acederPeca m (x, y-2)
 
-haEspacoTrepar (Jogo m (Jogador (x, y) Oeste b))
-    | b == False = (pecaEsquerda == Bloco || pecaEsquerda == Caixa) && pecaCimaEsquerda == Vazio && pecaCima == Vazio
-    | otherwise = (pecaEsquerda == Bloco || pecaEsquerda == Caixa) && pecaCimaEsquerda2x == Vazio && pecaCima2x == Vazio
-        where 
-            pecaEsquerda = acederPeca m (x-1, y)
-            pecaCimaEsquerda = acederPeca m (x-1, y-1)
-            pecaCimaEsquerda2x = acederPeca m (x-1, y-2)
-            pecaCima = acederPeca m (x, y-1)
-            pecaCima2x = acederPeca m (x, y-1)
+-- | Verifica se o jogador pode pegar ou pousar a caixa
+podeInteragir :: Jogo -> Bool
+podeInteragir (Jogo m (Jogador (x, y) d b))
+    | d == Este && b == False = pecaDireita == Caixa && pecaCimaDireita == Vazio && pecaCima == Vazio
+    | d == Oeste && b == False = pecaEsquerda == Caixa && pecaCimaEsquerda == Vazio && pecaCima == Vazio
+    | d == Este && b == True = pecaDireita == Vazio && pecaCimaDireita == Vazio
+    | otherwise = pecaEsquerda == Vazio && pecaCimaEsquerda == Vazio
+    where
+        pecaDireita = acederPeca m (x+1, y)
+        pecaCimaDireita = acederPeca m (x+1, y-1)
+        pecaEsquerda = acederPeca m (x-1, y)
+        pecaCimaEsquerda = acederPeca m (x-1, y-1)
+        pecaCima = acederPeca m (x, y-1)
 
 -- | Calcula quantas posições ele cai
-caiQuanto :: Jogo -> Movimento -> Int
-caiQuanto (Jogo m (Jogador (x, y) d b)) movimento
-    | cai (Jogo m (Jogador (x, y) d b)) movimento == True = 1 + caiQuanto (Jogo m (Jogador (x, y+1) d b)) movimento
+caiQuanto :: Jogo -> Int
+caiQuanto (Jogo m (Jogador (x, y) d b))
+    | vaiCair (Jogo m (Jogador (x, y) d b)) = 1 + caiQuanto (Jogo m (Jogador (x, y+1) d b))
     | otherwise = 0
 
-
--- | Verifica se o jogador cai após o movimento
-cai :: Jogo -> Movimento -> Bool
-cai (Jogo m (Jogador (x, y) _ _)) AndarDireita  = acederPeca m (x+1, y+1) == Vazio
-cai (Jogo m (Jogador (x, y) _ _)) AndarEsquerda  = acederPeca m (x-1, y+1) == Vazio
-cai _ _ = False
-
-
-
--- .>.
--- .x.
--- .X.
--- xxx
-
+-- | Verifica se o jogador cai
+vaiCair :: Jogo -> Bool
+vaiCair (Jogo m (Jogador (x, y) _ _)) = acederPeca m (x, y+1) == Vazio
 
 -- | Executa uma lista de movimentos
 correrMovimentos :: Jogo -> [Movimento] -> Jogo

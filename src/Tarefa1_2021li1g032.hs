@@ -13,26 +13,22 @@ import LI12122
 validaPotencialMapa :: [(Peca, Coordenadas)] -> Bool
 validaPotencialMapa pecas = c1 && c2 && c3 && c4 && c5
     where
-        pecasOrdColuna = insertionSort pecas comparaPorCoordenadasXY
-        maiores = maioresCoordenadas pecas
+        semVazios = removeVazios pecas
+        pecasOrdColuna = insertionSort semVazios comparaPorCoordenadasXY
         c1 = not (coordenadasRepetidas pecasOrdColuna)
-        c2 = contaPortas pecas == 1
+        c2 = contaPortas semVazios == 1
         c3 = caixasTemBase pecasOrdColuna
-        c4 = temEspaco pecasOrdColuna maiores (0, 0)
-        c5 = temChao pecasOrdColuna maiores 0
+        c4 = temEspacoAcimaDoChao pecasOrdColuna
+        c5 = temChao pecasOrdColuna
 
 
 -- | Verifica se há mais do que uma declaração de peça para a mesma posição
--- | NOTA: a lista deve estar oredenada por coordenadas
+--
+--   __NOTA__: a lista deve estar oredenada por colunas
 coordenadasRepetidas :: [(Peca, Coordenadas)] -> Bool
 coordenadasRepetidas [] = False
 coordenadasRepetidas [x] = False
 coordenadasRepetidas ((_, x):(p, y):t) = x == y || coordenadasRepetidas ((p, y):t)
-
-
--- | Comparator para peças no mapa com base nas coordenadas
-comparaPorCoordenadasXY :: (Peca, Coordenadas) -> (Peca, Coordenadas) -> Bool
-comparaPorCoordenadasXY (_, c1) (_, c2) = c1 > c2
 
 
 -- | Conta quantas portas existem no mapa
@@ -42,7 +38,8 @@ contaPortas (_ : t) = contaPortas t
 
 
 -- | Verifica se existe um bloco ou caixa por baixo de cada caixa
--- | NOTA: a lista deve estar ordenada por coordenadas
+--
+--   __NOTA__: a lista deve estar ordenada por colunas
 caixasTemBase :: [(Peca, Coordenadas)] -> Bool
 caixasTemBase [] = True
 caixasTemBase [(Caixa, _)] = False
@@ -53,23 +50,86 @@ caixasTemBase ((Caixa, (x1, y1)):(p, (x2, y2)):t) = caixaTemBase && caixasTemBas
 
 
 -- | Verifica se existe pelo menos um espaço livre no mapa
--- | NOTA: a lista deve estar oredenada por coordenadas
-temEspaco :: [(Peca, Coordenadas)] -> Coordenadas -> Coordenadas -> Bool
-temEspaco [] _ _ = False
-temEspaco ((p,c):t) maiores atuais
-    | c /= atuais = True
-    | snd c == snd maiores = temEspaco t maiores (fst atuais + 1, 0)
-    | otherwise = temEspaco t maiores (fst atuais, snd atuais + 1)
+--
+--   __NOTA__: a lista deve estar oredenada por colunas
+temEspacoAcimaDoChao :: [(Peca, Coordenadas)] -> Bool
+temEspacoAcimaDoChao pecas = temEspacoAcimaDoChaoAux pecas fundo (0,0)
+    where fundo = pegaNumBlocoPorColuna (selecionaChao (selecionaBlocos pecas))
 
+temEspacoAcimaDoChaoAux :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)] -> Coordenadas -> Bool
+temEspacoAcimaDoChaoAux [] _ _ = False
+temEspacoAcimaDoChaoAux ((p,(x,y)):t) ((pm,(xm,ym)):tm) atuais
+    | (x,y) /= atuais = True
+    | y == ym = temEspacoAcimaDoChaoAux t tm (fst atuais + 1, 0)
+    | otherwise = temEspacoAcimaDoChaoAux t ((pm,(xm,ym)):tm) (fst atuais, snd atuais + 1)
+
+pegaNumBlocoPorColuna :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
+pegaNumBlocoPorColuna [pc] = [pc]
+pegaNumBlocoPorColuna ((p1, (x1, y1)) : (p2, (x2, y2)):t)
+    | x1 == x2 = pegaNumBlocoPorColuna ((p2, (x2, y2)):t)
+    | otherwise = (p1, (x1, y1)) : pegaNumBlocoPorColuna ((p2, (x2, y2)):t)
 
 -- | Verifica se toda a base do mapa é constituida por blocos
--- | NOTA: a lista deve estar oredenada por coordenadas
-temChao :: [(Peca, Coordenadas)] -> Coordenadas -> Int -> Bool
-temChao [] _ _ = True
-temChao [(Bloco, c)] maiores colAtual = c == maiores && fst c == colAtual
-temChao [_] _ _ = False
-temChao ((Bloco,c):t) maiores colAtual
-    | snd c /= snd maiores = temChao t maiores colAtual
-    | fst c /= colAtual = False
-    | otherwise = temChao t maiores (colAtual + 1)
-temChao (_:t) maiores colAtual = temChao t maiores colAtual
+--
+--   __NOTA__: a lista deve estar oredenada por colunas
+temChao :: [(Peca, Coordenadas)] -> Bool
+temChao [] = False
+temChao pecas = temChaoAux (selecionaChao (selecionaBlocos pecas))
+
+temChaoAux :: [(Peca, Coordenadas)] -> Bool
+temChaoAux [(p,c)] = p == Bloco
+temChaoAux ((p1, (x1, y1)) : (p2, (x2, y2)):t)
+    | x1/=x2 = (y2 == y1 +1 || y2 == y1 || y2 == y1-1) && temChaoAux ((p2, (x2, y2)):t)
+    | otherwise = temChaoAux ((p1, (x1, y1)):t) || temChaoAux ((p2, (x2, y2)):t)
+
+selecionaChao :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
+selecionaChao [] = []
+selecionaChao [pc] = [pc]
+selecionaChao ((p1, (x1, y1)):t)
+    | x1 == x2 && y1 + 1 == y2 = (p1, (x1,y1)) : ultimasPecasTail
+    | x1 == x2 = ultimasPecasTail
+    | otherwise = (p1, (x1,y1)) : ultimasPecasTail
+    where
+        ultimasPecasTail = selecionaChao t
+        x2 = fst (snd (head ultimasPecasTail))
+        y2 = snd (snd (head ultimasPecasTail))
+
+selecionaBlocos :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
+selecionaBlocos [] = []
+selecionaBlocos ((p, c):t)
+    | p == Bloco = (p, c) : selecionaBlocos t
+    | otherwise = selecionaBlocos t
+
+
+
+-- Tem chao? Tem espaco? E valido?
+-- Pxx
+-- x..
+
+-- Tem chao? E valido?
+-- x.
+-- x.
+-- .x
+-- x.
+
+-- Pode pegar na caixa?
+-- P..C
+-- xxxx
+
+-- Tem chao? E valido?
+-- ...P
+-- ..xx
+-- .x?.  ? = Bloco || Vazio
+-- ..x.
+-- xx..
+
+-- Tem chao? E valido?
+-- Px.
+-- x.x
+-- x.x
+
+-- ...
+-- Pxx
+-- x..
+-- ..x
+

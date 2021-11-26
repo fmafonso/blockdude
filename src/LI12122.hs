@@ -14,8 +14,11 @@ module LI12122 (
   Jogo(..) , Jogador(..) , Movimento(..),
     -- * Funções auxiliares
   insertionSort,
-  maioresCoordenadas,
-  acederPeca
+  comparaPorCoordenadasXY,
+  comparaPorCoordenadasYX,
+  acederPeca,
+  inserePeca,
+  removeVazios
   ) where
 
 -- | Par de coordenadas de uma posição no 'Mapa'.
@@ -79,15 +82,15 @@ insert m (x:xs) f
     | otherwise = m:x:xs
 
 
--- | Calcula o maior par de coordenadas (x, y)
--- | NOTA: as coordenadas x e y podem vir de peças diferentes
-maioresCoordenadas :: [(Peca, Coordenadas)] -> Coordenadas
-maioresCoordenadas [(p,c)] = c
-maioresCoordenadas ((p, (x1, y1)):(_, (x2, y2)):t)
-    | x1 > x2 && y1 > y2 = maioresCoordenadas ((p, (x1, y1)):t)
-    | x1 > x2 = maioresCoordenadas ((p, (x1, y2)):t)
-    | y1 > y2 = maioresCoordenadas ((p, (x2, y1)):t)
-    | otherwise = maioresCoordenadas ((p, (x2, y2)):t)
+-- | Comparador para peças no mapa com base nas coordenadas
+comparaPorCoordenadasXY :: (Peca, Coordenadas) -> (Peca, Coordenadas) -> Bool
+comparaPorCoordenadasXY (_, c1) (_, c2) = c1 > c2
+
+
+-- | Comparator para peças no mapa com base nas coordenadas
+--   com prioridade para a coordenada y
+comparaPorCoordenadasYX :: (Peca, Coordenadas) -> (Peca, Coordenadas) -> Bool
+comparaPorCoordenadasYX (_, (x1, y1)) (_, (x2,y2)) = y1 > y2 || y1 == y2 && x1 > x2
 
 
 -- | Devolve a peça correspondente às coordenadas no mapa
@@ -99,3 +102,21 @@ acederPecaAux ([]:t) coordPeca atuais = acederPecaAux t coordPeca (0, snd atuais
 acederPecaAux ((h : hs) : t) coordPeca atuais
     | coordPeca == atuais = h
     | otherwise = acederPecaAux (hs:t) coordPeca (fst atuais + 1, snd atuais)
+
+-- | Insere uma peça numa coordenada do mapa
+inserePeca :: Mapa -> Peca -> Coordenadas -> Mapa
+inserePeca mapa peca coordPeca = inserePecaAux mapa peca coordPeca (0, 0)
+
+inserePecaAux :: Mapa -> Peca -> Coordenadas -> Coordenadas -> Mapa
+inserePecaAux ([]:t) peca coordPeca atuais = [] : inserePecaAux t peca coordPeca (0, snd atuais + 1)
+inserePecaAux ((h : hs) : t) peca coordPeca atuais
+    | coordPeca == atuais = (peca : hs):t
+    | otherwise = (h : head restoDoMapa) : tail restoDoMapa
+    where restoDoMapa = inserePecaAux (hs:t) peca coordPeca (fst atuais + 1, snd atuais)
+
+-- | Remove as peças "Vazio" da lista
+removeVazios :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
+removeVazios [] = []
+removeVazios ((p,c):t)
+    | p == Vazio = removeVazios t
+    | otherwise = (p,c) : removeVazios t 

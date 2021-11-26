@@ -22,6 +22,7 @@ showJogoAux :: Jogo -> Coordenadas -> String
 showJogoAux (Jogo [[]] _) _ = "\n"
 showJogoAux (Jogo ([]:t) j) (_, y) = '\n' : showJogoAux (Jogo t j) (0, y+1)
 showJogoAux (Jogo ((h : hs) : t) (Jogador c d b)) (x, y)
+    | c == (x,y+1) && b = (showPeca Caixa) : restoDoJogo
     | c == (x,y) = (showJogador (Jogador c d b)) : restoDoJogo
     | otherwise = (showPeca h) : restoDoJogo
     where restoDoJogo = showJogoAux (Jogo (hs:t) (Jogador c d b)) (x+1, y)
@@ -33,5 +34,5 @@ showPeca Porta = 'P'
 showPeca Caixa = 'C'
 
 showJogador :: Jogador -> Char
-showJogador (Jogador _ Este _) = '<'
-showJogador _ = '>'
+showJogador (Jogador _ Este _) = '>'
+showJogador _ = '<'
