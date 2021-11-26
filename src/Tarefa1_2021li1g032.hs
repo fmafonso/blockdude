@@ -33,6 +33,7 @@ coordenadasRepetidas ((_, x):(p, y):t) = x == y || coordenadasRepetidas ((p, y):
 
 -- | Conta quantas portas existem no mapa
 contaPortas :: [(Peca, Coordenadas)] -> Int
+contaPortas [] = 0
 contaPortas ((Porta, _):t) = 1 + contaPortas t
 contaPortas (_ : t) = contaPortas t
 

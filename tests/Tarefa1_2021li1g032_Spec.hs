@@ -4,6 +4,8 @@ import Test.HUnit
 import LI12122
 import Tarefa1_2021li1g032
 import Fixtures
+import Tarefa1_2021li1g032 (temEspacoAcimaDoChao, selecionaChao, coordenadasRepetidas, contaPortas)
+import Test.HUnit (assertEqual, Test (TestCase))
 
 -- Tarefa 1
 testsT1 =
@@ -59,3 +61,27 @@ testsT1 =
 
 -- []
 -- []
+
+
+test1 = TestCase (assertEqual "Verifica se tem espaço acima do chão 1" False (temEspacoAcimaDoChao [(Porta, (0,0)), (Bloco, (0,1)), (Bloco, (1,0)), (Bloco, (2,0))]))
+test2 = TestCase (assertEqual "Verifica se tem espaço acima do chão 2" True (temEspacoAcimaDoChao [(Porta, (0,0)), (Bloco, (0,1)), (Bloco, (0,2)), (Bloco, (1,0)), (Bloco, (2,1)), (Bloco, (2,2))]))
+test3 = TestCase (assertEqual "Verifica se tem espaço acima do chão 3" False (temEspacoAcimaDoChao [(Bloco, (0,0))]))
+test4 = TestCase (assertEqual "Verifica se tem espaço acima do chão 4" True (temEspacoAcimaDoChao [(Bloco, (0,1))]))
+test5 = TestCase (assertEqual "Verifica se tem espaço acima do chão 5" False (temEspacoAcimaDoChao []))
+test6 = TestCase (assertEqual "Verifica se tem chão 1" True (temChao [(Bloco, (0,0)), (Bloco, (0,1)), (Bloco, (1,2)), (Bloco, (2,1))]))
+test7 = TestCase (assertEqual "Verifica se tem chão 2" False (temChao [(Bloco, (0,0)), (Bloco, (0,1)), (Bloco, (1,2)), (Bloco, (2,0))]))
+test8 = TestCase (assertEqual "Verifica se tem chão 3" True (temChao [(Vazio, (0,0)), (Bloco, (0,1)), (Bloco, (0,2)), (Bloco, (1,0)), (Vazio, (1,1)), (Vazio, (1,2))]))
+test9 = TestCase (assertEqual "Verifica se tem chão 4" False (temChao [(Bloco, (0,2)), (Bloco, (1,0))]))
+test10 = TestCase (assertEqual "Verifica se tem chão 5" False (temChao []))
+test11 = TestCase (assertEqual "Seleciona os blocos que são considerados chão 1" [(Bloco, (0,0)), (Bloco, (0,1)), (Bloco, (0,5)), (Bloco, (1,3)), (Bloco, (1,4))] (selecionaChao [(Bloco, (0,5)), (Bloco, (1,3)), (Bloco, (1,4))]))
+test12 = TestCase (assertEqual "Seleciona os blocos que são considerados chão 2" [(Bloco, (0,1)), (Bloco, (0,2)), (Bloco, (1,0)), (Bloco, (2,1)), (Bloco, (2,2))] (selecionaChao [(Bloco, (0,1)), (Bloco, (0,2)), (Bloco, (1,0)), (Bloco, (2,1)), (Bloco, (2,2))]))
+test13 = TestCase (assertEqual "Seleciona os blocos que são considerados chão 3" [(Bloco, (0,2))] (selecionaChao [(Bloco, (0,2))]))
+test14 = TestCase (assertEqual "Seleciona os blocos que são considerados chão 4" [] (selecionaChao []))
+test15 = TestCase (assertEqual "Verifica se há coordenadas repetidas 1" True (coordenadasRepetidas [(Porta, (0,2)), (Bloco, (0,3)), (Caixa, (0,3)),(Bloco, (1,3)),(Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,0)), (Bloco, (4,1)), (Bloco, (4,2)), (Bloco, (4,3))]))
+test16 = TestCase (assertEqual "Verifica se há coordenadas repetidas 2" False (coordenadasRepetidas [(Porta, (0,2)), (Bloco, (0,3)),(Bloco, (1,3)),(Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,0)), (Bloco, (4,1)), (Bloco, (4,2)), (Bloco, (4,3))]))
+test17 = TestCase (assertEqual "Verifica se há coordenadas repetidas 3" False (coordenadasRepetidas [(Bloco, (0,1))]))
+test18 = TestCase (assertEqual "Verifica se há coordenadas repetidas 3" False (coordenadasRepetidas []))
+test19 = TestCase (assertEqual "Conta quantas portas tem 1" 1 (contaPortas [(Porta, (0,0)), (Bloco, (4,0)), (Bloco, (0,1)), (Bloco, (1,1)), (Bloco, (4,1)), (Bloco, (0,2)), (Bloco, (1,2)), (Bloco, (2,2)), (Bloco, (4,2)), (Bloco, (0,3)), (Bloco, (1,3)), (Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,3))]))
+test20 = TestCase (assertEqual "Conta quantas portas tem 2" 2 (contaPortas [(Porta, (0,0)), (Bloco, (4,0)), (Bloco, (0,1)), (Bloco, (1,1)), (Bloco, (4,1)), (Bloco, (0,2)), (Bloco, (1,2)), (Bloco, (2,2)), (Bloco, (4,2)), (Porta, (0,3)), (Bloco, (1,3)), (Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,3))]))
+test21 = TestCase (assertEqual "Conta quantas portas tem 3" 0 (contaPortas [(Bloco, (0,1)), (Bloco, (0,2)), (Bloco, (1,2))]))
+test22 = TestCase (assertEqual "Conta quantas portas tem 4" 0 (contaPortas []))
