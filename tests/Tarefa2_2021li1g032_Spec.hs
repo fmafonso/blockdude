@@ -15,4 +15,8 @@ testsT2 =
     , "Tarefa 2 - Teste Identidade m1" ~: sort m1 ~=?  sort (desconstroiMapa (constroiMapa m1))
     , "Tarefa 2 - Teste Identidade m1r" ~: m1r ~=?  constroiMapa (desconstroiMapa m1r)
     , "Tarefa 2 - Teste Construir Sobrepor Peças" ~: constroiMapa [(Porta, (7, 4))] ~=?  constroiMapa [(Porta, (7, 4)), (Porta, (7, 4))]
+    , "Tarefa 2 - Teste Construir Mapa mapaFAQ1" ~: mapaFAQ1r ~=? constroiMapa mapaFAQ1
+    , "Tarefa 2 - Teste Desconstruir Mapa mapaFAQ1r" ~: mapaFAQ1 ~=? desconstroiMapa mapaFAQ1r
+    , "Tarefa 2 - Teste Construir Mapa mapaFAQ3" ~: mapaFAQ3r ~=? constroiMapa mapaFAQ3
+    , "Tarefa 2 - Teste Desconstruir Mapa mapaFAQ3r" ~: mapaFAQ3 ~=? desconstroiMapa mapaFAQ3r
     ]

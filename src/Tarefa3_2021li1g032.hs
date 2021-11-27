@@ -19,6 +19,7 @@ showJogo jogo = showJogoAux jogo (0, 0)
 
 -- | Converte um Mapa na lista de peças não vazias e respetivas coordenadas
 showJogoAux :: Jogo -> Coordenadas -> String
+showJogoAux (Jogo [] _) _ = ""
 showJogoAux (Jogo [[]] _) _ = ""
 showJogoAux (Jogo ([]:t) j) (_, y) = '\n' : showJogoAux (Jogo t j) (0, y+1)
 showJogoAux (Jogo ((h : hs) : t) (Jogador c d b)) (x, y)

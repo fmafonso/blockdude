@@ -48,6 +48,7 @@ caixasTemBase [_] = True
 caixasTemBase ((Caixa, _):(Porta, _):t) = False
 caixasTemBase ((Caixa, (x1, y1)):(p, (x2, y2)):t) = caixaTemBase && caixasTemBase ((p, (x2, y2)):t)
     where caixaTemBase = x1 == x2 && y1 == y2 - 1
+caixasTemBase (_:t) = caixasTemBase t
 
 
 -- | Verifica se existe pelo menos um espaço livre no mapa
