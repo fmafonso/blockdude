@@ -100,6 +100,7 @@ acederPeca :: Mapa -> Coordenadas -> Peca
 acederPeca mapa coordPeca = acederPecaAux mapa coordPeca (0, 0)
 
 acederPecaAux :: Mapa -> Coordenadas -> Coordenadas -> Peca
+acederPecaAux [] _ _ = Vazio
 acederPecaAux ([]:t) coordPeca atuais = acederPecaAux t coordPeca (0, snd atuais + 1)
 acederPecaAux ((h : hs) : t) coordPeca atuais
     | coordPeca == atuais = h
