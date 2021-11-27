@@ -54,6 +54,7 @@ interage (Jogo mapa (Jogador (x, y) d b))
         caixaCaiDireita = caiQuanto (Jogo mapa (Jogador (x+1, y-1) d b))
         caixaCaiEsquerda = caiQuanto (Jogo mapa (Jogador (x-1, y-1) d b))
 
+-- | Calcula as coordenadas do Jogador após um movimento
 calculaCoordenadas :: Jogo -> Movimento -> Coordenadas
 calculaCoordenadas (Jogo _ (Jogador c _ _)) InterageCaixa = c
 calculaCoordenadas (Jogo _ (Jogador (x, y) _ _)) AndarDireita = (x+1, y)
@@ -61,11 +62,13 @@ calculaCoordenadas (Jogo _ (Jogador (x, y) _ _)) AndarEsquerda = (x-1, y)
 calculaCoordenadas (Jogo _ (Jogador (x, y) Este _)) Trepar = (x+1, y-1)
 calculaCoordenadas (Jogo _ (Jogador (x, y) Oeste _)) Trepar = (x-1, y-1)
 
+-- | Verifica a direção do Jogador
 calculaDirecao :: Jogo -> Movimento -> Direcao
 calculaDirecao _ AndarDireita = Este
 calculaDirecao _ AndarEsquerda = Oeste
 calculaDirecao (Jogo _ (Jogador _ d _)) _ = d
 
+-- | Verifica se tem Caixa
 calculaTemCaixa :: Jogo -> Movimento -> Bool
 calculaTemCaixa (Jogo _ (Jogador _ _ b)) InterageCaixa = not b
 calculaTemCaixa (Jogo _ (Jogador _ _ b)) _ = b

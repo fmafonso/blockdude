@@ -13,7 +13,7 @@ import LI12122
 instance Show Jogo where
     show = showJogo
 
-
+-- | Mostra o jogo
 showJogo :: Jogo -> String
 showJogo jogo = showJogoAux jogo (0, 0)
 
@@ -27,12 +27,14 @@ showJogoAux (Jogo ((h : hs) : t) (Jogador c d b)) (x, y)
     | otherwise = (showPeca h) : restoDoJogo
     where restoDoJogo = showJogoAux (Jogo (hs:t) (Jogador c d b)) (x+1, y)
 
+-- | Transforma uma peça na respetiva representação
 showPeca :: Peca -> Char
 showPeca Vazio = ' '
 showPeca Bloco = 'X'
 showPeca Porta = 'P'
 showPeca Caixa = 'C'
 
+-- | Transforma um jogador numa representação do mapa 
 showJogador :: Jogador -> Char
 showJogador (Jogador _ Este _) = '>'
 showJogador _ = '<'

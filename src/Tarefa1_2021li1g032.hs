@@ -57,6 +57,7 @@ temEspacoAcimaDoChao :: [(Peca, Coordenadas)] -> Bool
 temEspacoAcimaDoChao pecas = temEspacoAcimaDoChaoAux pecas fundo (0,0)
     where fundo = pegaNumBlocoPorColuna (selecionaChao (selecionaBlocos pecas))
 
+-- | Função auxiliar para verificar se existe pelo menos um espaço livre no mapa
 temEspacoAcimaDoChaoAux :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)] -> Coordenadas -> Bool
 temEspacoAcimaDoChaoAux [] _ _ = False
 temEspacoAcimaDoChaoAux ((p,(x,y)):t) ((pm,(xm,ym)):tm) atuais
@@ -64,6 +65,7 @@ temEspacoAcimaDoChaoAux ((p,(x,y)):t) ((pm,(xm,ym)):tm) atuais
     | y == ym = temEspacoAcimaDoChaoAux t tm (fst atuais + 1, 0)
     | otherwise = temEspacoAcimaDoChaoAux t ((pm,(xm,ym)):tm) (fst atuais, snd atuais + 1)
 
+-- | Seleciona um bloco por coordenada 
 pegaNumBlocoPorColuna :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
 pegaNumBlocoPorColuna [pc] = [pc]
 pegaNumBlocoPorColuna ((p1, (x1, y1)) : (p2, (x2, y2)):t)
@@ -76,6 +78,7 @@ pegaNumBlocoPorColuna ((p1, (x1, y1)) : (p2, (x2, y2)):t)
 temChao :: [(Peca, Coordenadas)] -> Bool
 temChao x = temChaoAux (map snd x) (fst (maioresCoordenadas x))
 
+-- | Função auxiliar para verificar se toda a base do mapa é constituida por blocos
 temChaoAux :: [Coordenadas] -> Int -> Bool
 temChaoAux [] _ = False
 temChaoAux ((x,y):t) maiorX = x == maiorX || n || ne || e || se || s || so || o || no
@@ -90,7 +93,7 @@ temChaoAux ((x,y):t) maiorX = x == maiorX || n || ne || e || se || s || so || o 
         no = temChaoAux (subLista t (x-1, y-1)) maiorX
 
 
-
+-- | De todos as peças, seleciona o chão
 selecionaChao :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
 selecionaChao [] = []
 selecionaChao [pc] = [pc]
@@ -103,6 +106,7 @@ selecionaChao ((p1, (x1, y1)):t)
         x2 = fst (snd (head ultimasPecasTail))
         y2 = snd (snd (head ultimasPecasTail))
 
+-- | Seleciona blocos de uma lista de peças com respetivas coordenadas
 selecionaBlocos :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
 selecionaBlocos [] = []
 selecionaBlocos ((p, c):t)

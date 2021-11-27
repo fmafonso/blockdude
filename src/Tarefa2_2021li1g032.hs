@@ -40,7 +40,7 @@ insereNoMapa (l : ls) p maiores atuais
     | fst atuais == fst maiores = [p] : (l : ls)
     | otherwise = (p : l) : ls
 
-
+-- | Torna um Mapa numa lista de peças e respetivas coordenadas
 desconstroiMapa :: Mapa -> [(Peca, Coordenadas)]
 desconstroiMapa mapa = desconstroiMapaAux mapa (0, 0)
 
