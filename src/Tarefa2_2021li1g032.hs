@@ -33,17 +33,6 @@ constroiMapaAux ((p,c):t) maiores atuais
     | c == atuais = insereNoMapa (constroiMapaAux t maiores (fst atuais + 1, snd atuais)) p maiores atuais
     | otherwise = insereNoMapa (constroiMapaAux ((p,c):t) maiores (fst atuais + 1, snd atuais)) Vazio maiores atuais
 
--- | Calcula o maior par de coordenadas (x, y)
---
---   __NOTA__: as coordenadas x e y podem vir de peças diferentes
-maioresCoordenadas :: [(Peca, Coordenadas)] -> Coordenadas
-maioresCoordenadas [(p,c)] = c
-maioresCoordenadas ((p, (x1, y1)):(_, (x2, y2)):t)
-    | x1 > x2 && y1 > y2 = maioresCoordenadas ((p, (x1, y1)):t)
-    | x1 > x2 = maioresCoordenadas ((p, (x1, y2)):t)
-    | y1 > y2 = maioresCoordenadas ((p, (x2, y1)):t)
-    | otherwise = maioresCoordenadas ((p, (x2, y2)):t)
-
 -- | Insere uma peça no mapa
 insereNoMapa :: Mapa -> Peca -> Coordenadas -> Coordenadas -> Mapa
 insereNoMapa [] p _ _ = [[p]]

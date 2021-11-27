@@ -13,12 +13,13 @@ module LI12122 (
     -- ** Jogo
   Jogo(..) , Jogador(..) , Movimento(..),
     -- * Funções auxiliares
-  insertionSort,
+  acederPeca,
   comparaPorCoordenadasXY,
   comparaPorCoordenadasYX,
-  acederPeca,
   inserePeca,
-  removeVazios
+  insertionSort,
+  maioresCoordenadas,
+  removeVazios,
   ) where
 
 -- | Par de coordenadas de uma posição no 'Mapa'.
@@ -119,4 +120,15 @@ removeVazios :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
 removeVazios [] = []
 removeVazios ((p,c):t)
     | p == Vazio = removeVazios t
-    | otherwise = (p,c) : removeVazios t 
+    | otherwise = (p,c) : removeVazios t
+
+-- | Calcula o maior par de coordenadas (x, y)
+--
+--   __NOTA__: as coordenadas x e y podem vir de peças diferentes
+maioresCoordenadas :: [(Peca, Coordenadas)] -> Coordenadas
+maioresCoordenadas [(p,c)] = c
+maioresCoordenadas ((p, (x1, y1)):(_, (x2, y2)):t)
+    | x1 > x2 && y1 > y2 = maioresCoordenadas ((p, (x1, y1)):t)
+    | x1 > x2 = maioresCoordenadas ((p, (x1, y2)):t)
+    | y1 > y2 = maioresCoordenadas ((p, (x2, y1)):t)
+    | otherwise = maioresCoordenadas ((p, (x2, y2)):t)

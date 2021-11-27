@@ -11,7 +11,6 @@ module Tarefa4_2021li1g032 where
 import LI12122
 import Tarefa3_2021li1g032
 
--- TODO: pode largar caixa em cima 
 
 moveJogador :: Jogo -> Movimento -> Jogo
 moveJogador jogo AndarDireita = moveDireita jogo
@@ -41,15 +40,19 @@ trepa (Jogo mapa (Jogador (x, y) d b))
     | podeTrepar = (Jogo mapa (Jogador (x-1, y-1) d b))
     | otherwise = (Jogo mapa (Jogador (x, y) d b))
     where podeTrepar = haEspacoTrepar (Jogo mapa (Jogador (x, y) d b))
+
 -- | Pega ou larga a caixa
 interage :: Jogo -> Jogo
 interage (Jogo mapa (Jogador (x, y) d b))
     | not valido = (Jogo mapa (Jogador (x, y) d b))
-    | d == Este && b = Jogo (inserePeca mapa Caixa (x+1, y)) (Jogador (x, y) d False)
-    | d == Este = Jogo (inserePeca mapa Vazio (x+1, y)) (Jogador (x, y) d True)
-    | b = Jogo (inserePeca mapa Caixa (x-1, y)) (Jogador (x, y) d False)
+    | d == Este && b = Jogo (inserePeca mapa Caixa (x+1, y + caixaCaiDireita )) (Jogador (x, y) d False)
+    | d == Este && not b = Jogo (inserePeca mapa Vazio (x+1, y)) (Jogador (x, y) d True)
+    | d == Oeste && b = Jogo (inserePeca mapa Caixa (x-1, y + caixaCaiEsquerda)) (Jogador (x, y) d False)
     | otherwise = Jogo (inserePeca mapa Vazio (x+1, y)) (Jogador (x, y) d True)
-    where valido = podeInteragir (Jogo mapa (Jogador (x, y) d b))
+    where
+        valido = podeInteragir (Jogo mapa (Jogador (x, y) d b))
+        caixaCaiDireita = caiQuanto (Jogo mapa (Jogador (x+1, y-1) d b))
+        caixaCaiEsquerda = caiQuanto (Jogo mapa (Jogador (x-1, y-1) d b))
 
 calculaCoordenadas :: Jogo -> Movimento -> Coordenadas
 calculaCoordenadas (Jogo _ (Jogador c _ _)) InterageCaixa = c
@@ -101,10 +104,10 @@ haEspacoTrepar (Jogo m (Jogador (x, y) d b))
 -- | Verifica se o jogador pode pegar ou pousar a caixa
 podeInteragir :: Jogo -> Bool
 podeInteragir (Jogo m (Jogador (x, y) d b))
-    | d == Este && b == False = pecaDireita == Caixa && pecaCimaDireita == Vazio && pecaCima == Vazio
-    | d == Oeste && b == False = pecaEsquerda == Caixa && pecaCimaEsquerda == Vazio && pecaCima == Vazio
-    | d == Este && b == True = pecaDireita == Vazio && pecaCimaDireita == Vazio
-    | otherwise = pecaEsquerda == Vazio && pecaCimaEsquerda == Vazio
+    | d == Este && not b = pecaDireita == Caixa && pecaCimaDireita == Vazio && pecaCima == Vazio
+    | d == Oeste && not b = pecaEsquerda == Caixa && pecaCimaEsquerda == Vazio && pecaCima == Vazio
+    | d == Este && b = pecaCimaDireita == Vazio
+    | otherwise = pecaCimaEsquerda == Vazio
     where
         pecaDireita = acederPeca m (x+1, y)
         pecaCimaDireita = acederPeca m (x+1, y-1)

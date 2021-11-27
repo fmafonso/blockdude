@@ -74,14 +74,22 @@ pegaNumBlocoPorColuna ((p1, (x1, y1)) : (p2, (x2, y2)):t)
 --
 --   __NOTA__: a lista deve estar oredenada por colunas
 temChao :: [(Peca, Coordenadas)] -> Bool
-temChao [] = False
-temChao pecas = temChaoAux (selecionaChao (selecionaBlocos pecas))
+temChao x = temChaoAux (map snd x) (fst (maioresCoordenadas x))
 
-temChaoAux :: [(Peca, Coordenadas)] -> Bool
-temChaoAux [(p,c)] = p == Bloco
-temChaoAux ((p1, (x1, y1)) : (p2, (x2, y2)):t)
-    | x1/=x2 = (y2 == y1 +1 || y2 == y1 || y2 == y1-1) && temChaoAux ((p2, (x2, y2)):t)
-    | otherwise = temChaoAux ((p1, (x1, y1)):t) || temChaoAux ((p2, (x2, y2)):t)
+temChaoAux :: [Coordenadas] -> Int -> Bool
+temChaoAux [] _ = False
+temChaoAux ((x,y):t) maiorX = x == maiorX || n || ne || e || se || s || so || o || no
+    where
+        n = temChaoAux (subLista t (x,y-1)) maiorX
+        ne = temChaoAux (subLista t (x+1, y-1)) maiorX
+        e = temChaoAux (subLista t (x+1, y)) maiorX
+        se = temChaoAux (subLista t (x+1, y+1)) maiorX
+        s = temChaoAux (subLista t (x, y+1)) maiorX
+        so = temChaoAux (subLista t (x-1, y+1)) maiorX
+        o = temChaoAux (subLista t (x-1, y)) maiorX
+        no = temChaoAux (subLista t (x-1, y-1)) maiorX
+
+
 
 selecionaChao :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]
 selecionaChao [] = []
@@ -102,6 +110,18 @@ selecionaBlocos ((p, c):t)
     | otherwise = selecionaBlocos t
 
 
+-- .x..
+-- xxxx
+-- .x..
+-- .x..
+
+subLista :: Eq a => [a] -> a -> [a]
+subLista [] _ = []
+subLista (c:cs) pivo
+    | c == pivo = c:cs
+    | otherwise = subLista cs pivo
+
+
 
 -- Tem chao? Tem espaco? E valido?
 -- Pxx
@@ -120,7 +140,7 @@ selecionaBlocos ((p, c):t)
 -- Tem chao? E valido?
 -- ...P
 -- ..xx
--- .x?.  ? = Bloco || Vazio
+-- .x..  ? = Bloco || Vazio
 -- ..x.
 -- xx..
 
@@ -129,8 +149,5 @@ selecionaBlocos ((p, c):t)
 -- x.x
 -- x.x
 
--- ...
--- Pxx
--- x..
--- ..x
-
+-- x.x
+-- xxx

@@ -22,6 +22,12 @@ $ ghci -i="src" -i="tests" tests/Tests.hs
 >>> runAllTests -- Correr todos os testes
 ```
 
+
+## Documentação
+
+A documentação do projeto pode ser gerada utilizando o comando `haddock -h -o doc/html src/*`.
+
+
 ## Grupo 32
 
 - **A100553** João Gomes Dias de Faria;
