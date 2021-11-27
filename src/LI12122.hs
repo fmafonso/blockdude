@@ -72,6 +72,7 @@ data Movimento
 
 -- | ordena uma lista usando o algoritmo insertion sort
 insertionSort :: Ord a => [a] -> (a -> a -> Bool) -> [a]
+insertionSort [] _ = []
 insertionSort [a] _ = [a]
 insertionSort (x:y:t) f = insert x (insertionSort (y:t) f) f
 
