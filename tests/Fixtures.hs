@@ -1,7 +1,7 @@
 module Fixtures where
 
 import LI12122
-import LI12122 (Jogo)
+import LI12122 (Jogo, Mapa)
 import GHC.ByteCode.Types (BCONPtr)
 
 m1 :: [(Peca, Coordenadas)]
@@ -66,47 +66,34 @@ m2e2 = Jogo m2r (Jogador (4, 1) Oeste False)
 
 m3 :: [(Peca, Coordenadas)]
 m3 =
-  [ (Bloco, (0, 4)),
-    (Caixa, (1, 3)),
-    (Bloco, (1, 4)),
-    (Caixa, (2, 3)),
-    (Bloco, (2, 4)),
-    (Caixa, (3, 3)),
-    (Bloco, (3, 4))
-    (Bloco, (4, 2)),
-    (Bloco, (4, 4)),
-    (Porta, (5, 1)),
-    (Bloco, (5, 2)),
-    (Bloco, (5, 4)),
+  [ (Bloco, (0, 3)),
+    (Caixa, (1, 2)),
+    (Bloco, (1, 3)),
+    (Caixa, (2, 2)),
+    (Bloco, (2, 3)),
+    (Caixa, (3, 2)),
+    (Bloco, (3, 3)),
+    (Bloco, (4, 1)),
+    (Bloco, (4, 3)),
+    (Porta, (5, 0)),
+    (Bloco, (5, 1)),
+    (Bloco, (5, 3)),
+    (Bloco, (6, 0)),
     (Bloco, (6, 1)),
     (Bloco, (6, 2)),
-    (Bloco, (6, 3)),
-    (Bloco, (6, 4))
+    (Bloco, (6, 3))
   ]
 
 m3r :: Mapa
 m3r =
-  [ [Vazio, Vazio, Vazio, Vazio, Vazio, Vazio, Vazio],
-    [Vazio, Vazio, Vazio, Vazio, Vazio, Porta, Bloco],
+  [ [Vazio, Vazio, Vazio, Vazio, Vazio, Porta, Bloco],
     [Vazio, Vazio, Vazio, Vazio, Bloco, Bloco, Bloco],
     [Vazio, Caixa, Caixa, Caixa, Vazio, Vazio, Bloco],
     [Bloco, Bloco, Bloco, Bloco, Bloco, Bloco, Bloco]
   ]
 
 m3e1 :: Jogo
-m3e1 = Jogo m3r (Jogador (0, 3) Este False)
+m3e1 = Jogo m3r (Jogador (0, 2) Este False)
 
 m3e2 :: Jogo
-m3e2 = Jogo m3r (Jogador (4, 3) Oeste False)
-
---TESTE PARA A 1.1 -> Da True
---[(Porta, (0,2)), (Bloco, (0,3)), (Caixa, (0,3)),(Bloco, (1,3)),(Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,0)), (Bloco, (4,1)), (Bloco, (4,2)), (Bloco, (4,3))]
---TESTE PARA A 1.1 -> Da False
---[(Porta, (0,2)), (Bloco, (0,3)),(Bloco, (1,3)),(Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,0)), (Bloco, (4,1)), (Bloco, (4,2)), (Bloco, (4,3))]
-
-
---TESTE PARA A 1.2 -> Da True
---[(Porta, (0,0)), (Bloco, (4,0)), (Bloco, (0,1)), (Bloco, (1,1)), (Bloco, (4,1)), (Bloco, (0,2)), (Bloco, (1,2)), (Bloco, (2,2)), (Bloco, (4,2)), (Bloco, (0,3)), (Bloco, (1,3)), (Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,3))]
-
---TESTE PARA A 1.2 -> Da False
---[(Porta, (0,0)), (Bloco, (4,0)), (Bloco, (0,1)), (Bloco, (1,1)), (Bloco, (4,1)), (Bloco, (0,2)), (Bloco, (1,2)), (Bloco, (2,2)), (Bloco, (4,2)), (Porta, (0,3)), (Bloco, (1,3)), (Bloco, (2,3)), (Bloco, (3,3)), (Bloco, (4,3))]
+m3e2 = Jogo m3r (Jogador (4, 2) Oeste False)
