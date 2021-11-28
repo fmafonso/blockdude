@@ -17,7 +17,7 @@ instance Show Jogo where
 showJogo :: Jogo -> String
 showJogo jogo = showJogoAux jogo (0, 0)
 
--- | Converte um Mapa na lista de peças não vazias e respetivas coordenadas
+-- | Converte um Mapa na sua representação em ASCII
 showJogoAux :: Jogo -> Coordenadas -> String
 showJogoAux (Jogo [] _) _ = ""
 showJogoAux (Jogo [[]] _) _ = ""
@@ -28,14 +28,14 @@ showJogoAux (Jogo ((h : hs) : t) (Jogador c d b)) (x, y)
     | otherwise = (showPeca h) : restoDoJogo
     where restoDoJogo = showJogoAux (Jogo (hs:t) (Jogador c d b)) (x+1, y)
 
--- | Transforma uma peça na respetiva representação
+-- | Transforma uma peça na respetiva representação em ASCII
 showPeca :: Peca -> Char
 showPeca Vazio = ' '
 showPeca Bloco = 'X'
 showPeca Porta = 'P'
 showPeca Caixa = 'C'
 
--- | Transforma um jogador numa representação do mapa 
+-- | Transforma um jogador na sua representação em ASCII 
 showJogador :: Jogador -> Char
 showJogador (Jogador _ Este _) = '>'
 showJogador _ = '<'

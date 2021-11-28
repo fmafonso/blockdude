@@ -10,6 +10,7 @@ module Tarefa2_2021li1g032 where
 
 import LI12122
 
+-- | Constrói um mapa com base na lista de peças que o constituem
 constroiMapa :: [(Peca, Coordenadas)] -> Mapa
 constroiMapa [] = []
 constroiMapa pecas = constroiMapaAux pecasOrdLinha maiores (0,0)
@@ -20,7 +21,7 @@ constroiMapa pecas = constroiMapaAux pecasOrdLinha maiores (0,0)
         maiores = maioresCoordenadas pecas
 
 
--- | Constroi um mapa com base na lista de peças e as suas dimensões
+-- | Constrói um mapa com base na lista de peças e as suas dimensões
 --
 --   __NOTAS__:
 --
@@ -54,7 +55,7 @@ removeCoordenadasRepetidas ((p,c):t)
     | otherwise = (p,c) : removeCoordenadasRepetidas t
 
 
--- | Torna um Mapa numa lista de peças e respetivas coordenadas
+-- | Transforma um Mapa numa lista de peças e respetivas coordenadas
 desconstroiMapa :: Mapa -> [(Peca, Coordenadas)]
 desconstroiMapa [] = []
 desconstroiMapa mapa = insertionSort (desconstroiMapaAux mapa (0, 0)) comparaPorCoordenadasXY

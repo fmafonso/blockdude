@@ -4,16 +4,35 @@ import Test.HUnit
 import LI12122
 import Tarefa1_2021li1g032
 import Fixtures
+import Fixture_mapaFAQ1
+import Fixture_mapaFAQ2
+import Fixture_mapaFAQ3
 import Tarefa1_2021li1g032 (temEspacoAcimaDoChao, selecionaChao, coordenadasRepetidas, contaPortas)
 import Test.HUnit (assertEqual, Test (TestCase))
 
 -- Tarefa 1
 testsT1 =
   test
-    [ "Tarefa 1 - Teste Valida Mapa m1r" ~: True ~=? validaPotencialMapa m1
-    , "Tarefa 1 - Teste Valida Mapa vazio" ~: False ~=? validaPotencialMapa []
+    [ "Tarefa 1 - Teste Valida Mapa vazio" ~: False ~=? validaPotencialMapa []
     , "Tarefa 1 - Teste Valida Mapa com 2 portas" ~: False ~=? validaPotencialMapa [(Porta, (0,0)), (Porta, (1,0))]
+    , "Tarefa 1 - Teste Valida Mapa m1" ~: True ~=? validaPotencialMapa m1
+    , "Tarefa 1 - Teste Valida Mapa m2" ~: False ~=? validaPotencialMapa m2
+    , "Tarefa 1 - Teste Valida Mapa m3" ~: True ~=? validaPotencialMapa m3
+    , "Tarefa 1 - Teste Valida Mapa m5" ~: True ~=? validaPotencialMapa m5
+    , "Tarefa 1 - Teste Valida Mapa m6" ~: True ~=? validaPotencialMapa m6
+    , "Tarefa 1 - Teste Valida Mapa m7" ~: True ~=? validaPotencialMapa m7
+    , "Tarefa 1 - Teste Valida Mapa m8" ~: True ~=? validaPotencialMapa m8
+    , "Tarefa 1 - Teste Valida Mapa m9" ~: True ~=? validaPotencialMapa m9
+    , "Tarefa 1 - Teste Valida Mapa m10" ~: True ~=? validaPotencialMapa m10
+    , "Tarefa 1 - Teste Valida Mapa m11" ~: True ~=? validaPotencialMapa m11
+    , "Tarefa 1 - Teste Valida Mapa m12" ~: True ~=? validaPotencialMapa m12
+    , "Tarefa 1 - Teste Valida Mapa m13" ~: True ~=? validaPotencialMapa m13
+    , "Tarefa 1 - Teste Valida Mapa m14" ~: True ~=? validaPotencialMapa m14
+    , "Tarefa 1 - Teste Valida Mapa m15" ~: True ~=? validaPotencialMapa m15
+    , "Tarefa 1 - Teste Valida Mapa m16" ~: True ~=? validaPotencialMapa m16
+    , "Tarefa 1 - Teste Valida Mapa m17" ~: True ~=? validaPotencialMapa m17
     , "Tarefa 1 - Teste Valida Mapa mapaFAQ1" ~: True ~=? validaPotencialMapa mapaFAQ1
+    , "Tarefa 1 - Teste Valida Mapa mapaFAQ2" ~: True ~=? validaPotencialMapa mapaFAQ2
     , "Tarefa 1 - Teste Valida Mapa mapaFAQ3" ~: True ~=? validaPotencialMapa mapaFAQ3
     , "Verifica se tem espaço acima do chão 1" ~: False ~=? (temEspacoAcimaDoChao [(Porta, (0,0)), (Bloco, (0,1)), (Bloco, (1,0)), (Bloco, (2,0))])
     , "Verifica se tem espaço acima do chão 2" ~: True ~=? (temEspacoAcimaDoChao [(Porta, (0,0)), (Bloco, (0,1)), (Bloco, (0,2)), (Bloco, (1,0)), (Bloco, (2,1)), (Bloco, (2,2))])
