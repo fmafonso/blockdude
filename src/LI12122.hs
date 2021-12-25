@@ -54,7 +54,7 @@ data Jogo =
   Jogo
     Mapa -- ^ o puzzle em si
     Jogador -- ^ o personagem do jogo
-  deriving (Read, Eq)
+  deriving (Read, Eq, Ord)
 
 -- | Os movimentos que podem ser tomados pelo jogador em cada estado do 'Jogo'.
 data Movimento
@@ -103,6 +103,7 @@ acederPecaAux :: Mapa -> Coordenadas -> Coordenadas -> Peca
 acederPecaAux [] _ _ = Vazio
 acederPecaAux ([]:t) coordPeca atuais = acederPecaAux t coordPeca (0, snd atuais + 1)
 acederPecaAux ((h : hs) : t) coordPeca atuais
+    | (snd coordPeca < 0) || (fst coordPeca < 0) = Vazio
     | coordPeca == atuais = h
     | otherwise = acederPecaAux (hs:t) coordPeca (fst atuais + 1, snd atuais)
 
