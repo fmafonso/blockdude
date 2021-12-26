@@ -16,10 +16,8 @@ resolveJogo x jogo
 aux :: Jogo -> Int -> Map Jogo (Int, Maybe [Movimento]) -> (Maybe [Movimento], Map Jogo (Int, Maybe [Movimento]))
 aux jogo max visitados
     | value /= Nothing && max <= fst (fromJust value) = (snd (fromJust value), visitados)
-    | value /= Nothing 
-    | estaResolvido jogo = (Just [], Data.Map.insert jogo (max, Just []) (snd auxInterage))
     | max < 0 = (Nothing, visitados)
-    -- | max <= 0 = (Nothing, Data.Map.insert jogo Nothing visitados)
+    | estaResolvido jogo = (Just [], Data.Map.insert jogo (max, Just []) (snd auxInterage))
     | otherwise = (caminhoMaisCurto, Data.Map.insert jogo (max, caminhoMaisCurto) (snd auxInterage))
     where
         value = Data.Map.lookup jogo visitados
