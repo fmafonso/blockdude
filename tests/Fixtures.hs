@@ -1,7 +1,7 @@
 module Fixtures where
 
 import LI12122
-import GHC.ByteCode.Types (BCONPtr)
+
 
 -- .......
 -- ......X

@@ -4,25 +4,26 @@ import LI12122
 import Tarefa4_2021li1g032
 import Tarefa3_2021li1g032
 import Data.Maybe
-import Data.Map (Map, empty, insert, lookup, toList)
+import Data.HashMap (Map, empty, insert, lookup, toList)
 
+-- quando encontra caminho com x movimentos o max das outras alternativas passa a ser x
 resolveJogo :: Int -> Jogo -> Maybe [Movimento]
 resolveJogo x jogo
     | caminho == Nothing = caminho
     | length (fromJust caminho) <= x = caminho
     | otherwise = Nothing
-    where caminho = fst (aux jogo x Data.Map.empty)
+    where caminho = fst (aux jogo x Data.HashMap.empty)
 
 aux :: Jogo -> Int -> Map Jogo (Int, Maybe [Movimento]) -> (Maybe [Movimento], Map Jogo (Int, Maybe [Movimento]))
 aux jogo max visitados
     | value /= Nothing && max <= fst (fromJust value) = (snd (fromJust value), visitados)
     | max < 0 = (Nothing, visitados)
-    | estaResolvido jogo = (Just [], Data.Map.insert jogo (max, Just []) (snd auxInterage))
-    | otherwise = (caminhoMaisCurto, Data.Map.insert jogo (max, caminhoMaisCurto) (snd auxInterage))
+    | estaResolvido jogo = (Just [], Data.HashMap.insert jogo (max, Just []) (snd auxInterage))
+    | otherwise = (caminhoMaisCurto, Data.HashMap.insert jogo (max, caminhoMaisCurto) (snd auxInterage))
     where
-        value = Data.Map.lookup jogo visitados
+        value = Data.HashMap.lookup jogo visitados
         visitadosFrente
-            | value == Nothing = Data.Map.insert jogo (max, Nothing) visitados
+            | value == Nothing = Data.HashMap.insert jogo (max, Nothing) visitados
             | otherwise = visitados
         auxDireita = aux (moveJogador jogo AndarDireita) (max-1) visitadosFrente
         auxEsquerda = aux (moveJogador jogo AndarEsquerda) (max-1) (snd auxDireita)
@@ -94,17 +95,17 @@ juntaMaybeLista (h1:h2:t)
     | otherwise = juntaMaybeLista (h2:t)
 
 juntaHashMap :: [Map Jogo (Maybe [Movimento])] -> Map Jogo (Maybe [Movimento])
-juntaHashMap [] = Data.Map.empty
+juntaHashMap [] = Data.HashMap.empty
 juntaHashMap [e] = e
-juntaHashMap (h1:h2:t) = juntaHashMap ((juntaHashMapAux (Data.Map.toList h1) h2) : t)
+juntaHashMap (h1:h2:t) = juntaHashMap ((juntaHashMapAux (Data.HashMap.toList h1) h2) : t)
 
 juntaHashMapAux :: [(Jogo, (Maybe [Movimento]))] -> Map Jogo (Maybe [Movimento]) -> Map Jogo (Maybe [Movimento])
 juntaHashMapAux [] hm = hm
 juntaHashMapAux ((jogo, lista):t) hm
-    | coiso == Nothing = Data.Map.insert jogo lista hm
-    | otherwise = Data.Map.insert jogo (juntaMaybeLista [lista,(fromJust coiso)]) hm
+    | coiso == Nothing = Data.HashMap.insert jogo lista hm
+    | otherwise = Data.HashMap.insert jogo (juntaMaybeLista [lista,(fromJust coiso)]) hm
     where
-        coiso = Data.Map.lookup jogo hm
+        coiso = Data.HashMap.lookup jogo hm
 
 juntaResultados :: [(Maybe [Movimento], Map Jogo (Maybe [Movimento]))] -> (Maybe [Movimento], Map Jogo (Maybe [Movimento]))
 juntaResultados l = (juntaMaybeLista (map fst l), juntaHashMap (map snd l))

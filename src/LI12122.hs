@@ -22,6 +22,7 @@ module LI12122 (
   removeVazios,
   ) where
 
+
 -- | Par de coordenadas de uma posição no 'Mapa'.
 type Coordenadas = (Int, Int)
 
