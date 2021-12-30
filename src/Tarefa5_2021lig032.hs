@@ -10,24 +10,52 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
 import Graphics.Gloss.Interface.Environment (getScreenSize)
 import LI12122
+import Data.Map (Map, empty, insert, lookup)
+import Tarefa5_types
 import Tarefa2_2021li1g032
 import Tarefa4_2021li1g032
+import Data.Maybe
+
+-- data Opcoes = Jogar
+--             | Creditos
+--             | Sair
+--     deriving (Eq)
+
+-- type Movimentos = Int
+-- type NivelID = Int
+
+-- data Janela = MainMenu Opcoes
+--              | PlayMenu Int
+--              | ModoJogo Jogo NivelID Movimentos
+--              | VenceuJogo
+
+-- type BlockDude = (Janela, Niveis, Texturas)
+
+-- data Textura = TexturaBloco
+--              | TexturaCaixa
+--              | TexturaPorta
+--              | TexturaFundo
+--              | TexturaJogador Direcao
+--              | TexturaEstrela
+
+--     deriving (Eq, Ord)
+
+-- type Texturas = ([Map Textura Picture], Int)
+
+-- type JogosPorPagina = Int
+-- type NivelAtual = Int
+
+-- type MovimentosMin = Maybe Int
+-- type MovimentosOtimos = Int
+-- type Nivel = (Jogo, MovimentosMin, MovimentosOtimos)
+
+-- type Niveis = ([Nivel], NivelAtual)
 
 
-data Opcoes = Jogar
-            | Creditos
-            | Sair
-    deriving (Eq)
-
-data Windows = MainMenu Opcoes
-             | PlayMenu Int
-             | ModoJogo Jogo
-             | VenceuJogo
-
-
-type World = (Windows, Jogo)
-
-
+loadNiveis :: Niveis
+loadNiveis = ([
+    (jogoFAQ1, Nothing, 97), (jogoFAQ2, Nothing, 19), (jogoFAQ3, Nothing, 129),
+    (jogoFAQ1, Nothing, 97), (jogoFAQ2, Nothing, 19), (jogoFAQ3, Nothing, 129)], 3)
 
 dimensaoBloco :: Int
 dimensaoBloco = 40
@@ -124,6 +152,7 @@ drawPeca (Caixa, coord) = drawCaixa coord
 drawPeca (Porta, coord) = drawPorta coord
 
 drawBloco :: Coordenadas -> Picture
+-- drawBloco (x,y) = Translate i j imagemBloco
 drawBloco (x,y) = polygon [(i,j), (i+d,j), (i+d,j+d), (i,j+d)]
     where
         d = fromIntegral dimensaoBloco
@@ -167,11 +196,11 @@ TESTES UNITARIOS FUNCAO G
 (5,5) (4,4) (3,2) -> ((1,1),(4,4))
 -}
 
-draw :: World -> Picture
-draw (MainMenu opcao, jogo) = drawMainMenu opcao
-draw (PlayMenu nivel, _) = drawPlayMenu nivel
-draw (ModoJogo jogo, _) = drawModoJogo jogo
-draw (VenceuJogo, _) = drawVenceuJogo
+draw :: BlockDude -> Picture
+draw (MainMenu opcao, _, _) = drawMainMenu opcao
+draw (PlayMenu nivel, niveis, texturas) = drawPlayMenu (PlayMenu nivel, niveis, texturas)
+draw (ModoJogo jogo _ _, _, _) = drawModoJogo jogo
+draw (VenceuJogo, _, _) = drawVenceuJogo
 
 drawVenceuJogo :: Picture
 drawVenceuJogo = Translate (-200) 0 $ Color red $ Text "Victory!"
@@ -182,16 +211,65 @@ drawMainMenu op = Pictures [
     if op == Creditos then Color blue $ Translate (0) (-50) $ drawOptions "Credits" else Translate (0) (-50) $ drawOptions "Credits",
     (if op == Sair then Color blue else id) $ Translate (0) (-100) $ drawOptions "Quit"]
 
-drawPlayMenu :: Int -> Picture
--- drawPlayMenu atual = Translate (-800) 400 $ drawOptions ((show atual) ++ (show niveis) ++ (show y))
-drawPlayMenu atual = Pictures (drawPlayMenuAux atual niveis y) 
-    where
-        niveis = [0,1,2]
-        y = 50
+drawPlayMenu :: BlockDude -> Picture
+drawPlayMenu (PlayMenu n, niveis, texturas) = Pictures (drawPlayMenuAux 0 (PlayMenu n, niveis, texturas))
 
-drawPlayMenuAux :: Int -> [Int] -> Float -> [Picture]
-drawPlayMenuAux _ [] _ = []
-drawPlayMenuAux atual (h:t) y = ((if atual == h then Color blue else id) $ Translate 0 y $ drawOptions ("Level " ++ show h)) : drawPlayMenuAux atual t (y-50)
+drawPlayMenuAux :: NivelID -> BlockDude -> [Picture]
+drawPlayMenuAux _ (_, ([], _), _) = []
+drawPlayMenuAux i (PlayMenu n,((h:t), atual), texturas)
+    | i == n = drawNivelRealcado h i texturas : drawPlayMenuAux (i+1) (PlayMenu n, (t, atual), texturas)
+    | i == n-1 = drawNivelSecundario h i Oeste : drawPlayMenuAux (i+1) (PlayMenu n, (t, atual), texturas)
+    | i == n+1 = [drawNivelSecundario h i Este]
+    | otherwise = drawPlayMenuAux (i+1) (PlayMenu n, (t, atual), texturas)
+
+
+-- drawPlayMenuAux :: Int -> Int -> Niveis -> Float -> [Picture]
+-- drawPlayMenuAux _ _ ([], _) _ = []
+-- drawPlayMenuAux i n ((h:t), atual) y
+--     | n == i = drawNivelRealcado h i y : drawPlayMenuAux (i+1) n (t, atual) (y-50)
+--     | otherwise = drawNivelSecundario h i y : drawPlayMenuAux (i+1) n (t, atual) (y-50)
+
+-- tirar o Int e o Float
+drawNivelRealcado :: Nivel -> NivelID -> Texturas -> Picture
+drawNivelRealcado (_, m, o) i (texturas, tID) = Pictures [nivelPicture, estrelaMeio, estrelaEsquerda, estrelaDireita, numNivel]
+    where
+        ndx = (fromIntegral larguraJanela) / 4.5
+        ndy = (fromIntegral alturaJanela) / 4
+        nivelPicture = Color blue $ polygon [(-ndx,-ndy), (ndx,-ndy), (ndx,ndy), (-ndx, ndy)]
+        numNivel = Color white $ Scale (0.5) (0.5) $ Text (show i)
+        ed = (fromIntegral dimensaoBloco) / 2
+        mx = (fromIntegral larguraJanela) / 12
+        my = -((fromIntegral alturaJanela) / 3)
+        nEstrelas = numEstrelas m o
+        mapTextura = texturas !! tID
+        estrelaPreta = polygon [(ed,ed),(-ed,ed),(-ed,-ed),(ed,-ed)]
+        estrela = fromJust (Data.Map.lookup TexturaEstrela mapTextura)
+        estrelaEsquerda = Translate (-mx) my $ if nEstrelas > 0 then estrela else estrelaPreta
+        estrelaMeio = Translate 0 my $ if nEstrelas > 1 then estrela else estrelaPreta
+        estrelaDireita = Translate mx my $ if nEstrelas > 2 then estrela else estrelaPreta
+
+
+drawNivelSecundario :: Nivel -> NivelID -> Direcao -> Picture
+drawNivelSecundario _ i dir = Pictures [nivelPicture, numNivel]
+    where
+        dx = (fromIntegral larguraJanela) * 13 / 36
+        mx = if dir == Este then dx else -dx
+        d = (fromIntegral alturaJanela) / 6
+        nivelPolygon = polygon [(-d,-d), (d,-d), (d,d), (-d,d)]
+        nivelPicture = Color red $ Translate mx 0 $ nivelPolygon
+        numNivel = Color white $ Translate mx 0 $ Scale (0.5) (0.5) $ Text (show i)
+
+-- Translate 0 y $ drawOptions ("Level " ++ show i)
+
+numEstrelas :: MovimentosMin -> MovimentosOtimos -> Int
+numEstrelas Nothing _ = 0
+numEstrelas m o
+    | x == y = 3
+    | x > y*4/3 = 1
+    | otherwise = 2
+    where
+        x = fromIntegral (fromJust m)
+        y = fromIntegral o
 
 drawOptions :: String -> Picture
 drawOptions option = Translate (-50) 0 $ Scale (0.3) (0.3) $ Text option
@@ -220,64 +298,82 @@ drawGrid = (map linhaVertical xList) ++ (map linhaHorizontal yList)
 drawModoJogo :: Jogo -> Picture
 drawModoJogo jogo = Pictures (drawJogo jogo ++ drawGrid)
 
-event :: Event -> World -> World
-event ev ((MainMenu op), jogo) = eventMenu ev ((MainMenu op), jogo)
-event ev ((PlayMenu n), jogo) = eventPlayMenu ev ((PlayMenu n), jogo)
-event ev ((ModoJogo estadoJogo), jogo) = eventModoJogo ev ((ModoJogo estadoJogo), jogo)
-event ev (VenceuJogo, jogo) = eventVenceuJogo ev (VenceuJogo, jogo)
+-- TODO tirar as texturas
+event :: Event -> BlockDude -> BlockDude
+event ev ((MainMenu op), niveis, texturas) = eventMenu ev ((MainMenu op), niveis, texturas)
+event ev ((PlayMenu n), niveis, texturas) = eventPlayMenu ev ((PlayMenu n), niveis, texturas)
+event ev ((ModoJogo estadoJogo n m), niveis, texturas) = eventModoJogo ev ((ModoJogo estadoJogo n m), niveis, texturas)
+event ev (VenceuJogo, niveis, texturas) = eventVenceuJogo ev (VenceuJogo, niveis, texturas)
 
-eventMenu :: Event -> World -> World
-eventMenu (EventKey (SpecialKey KeyUp) Down  _ _ ) (MainMenu Jogar, jogo) = (MainMenu Sair, jogo)
-eventMenu (EventKey (SpecialKey KeyUp) Down _ _ ) (MainMenu Creditos, jogo) = (MainMenu Jogar, jogo)
-eventMenu (EventKey (SpecialKey KeyUp) Down _ _ ) (MainMenu Sair , jogo) = (MainMenu Creditos, jogo)
-eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Jogar, jogo) = (MainMenu Creditos, jogo)
-eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Creditos, jogo) = (MainMenu Sair, jogo)
-eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Sair, jogo) = (MainMenu Jogar, jogo)
-eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Sair, jogo) = undefined
-eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Jogar, jogo) = (PlayMenu 0, jogo)
-eventMenu _ w = w
+eventMenu :: Event -> BlockDude -> BlockDude
+eventMenu (EventKey (SpecialKey KeyUp) Down  _ _ ) (MainMenu Jogar, niveis, texturas) = (MainMenu Sair, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyUp) Down _ _ ) (MainMenu Creditos, niveis, texturas) = (MainMenu Jogar, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyUp) Down _ _ ) (MainMenu Sair , niveis, texturas) = (MainMenu Creditos, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Jogar, niveis, texturas) = (MainMenu Creditos, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Creditos, niveis, texturas) = (MainMenu Sair, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Sair, niveis, texturas) = (MainMenu Jogar, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Sair, niveis, texturas) = undefined
+eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Jogar, (niveis, atual), texturas) = (PlayMenu atual, (niveis, atual), texturas)
+eventMenu _ bd = bd
 
-eventVenceuJogo :: Event -> World -> World
-eventVenceuJogo _ (VenceuJogo, jogo) = (MainMenu Jogar , jogo)
+eventVenceuJogo :: Event -> BlockDude -> BlockDude
+eventVenceuJogo _ (VenceuJogo, (niveis, atual), texturas) = (PlayMenu atual, (niveis, atual), texturas)
 
-eventPlayMenu :: Event -> World -> World
-eventPlayMenu (EventKey (SpecialKey k) Down  _ _ ) (PlayMenu n, jogo)
-    | k == KeyUp = (PlayMenu (if n-1 < 0 then (length niveis) - 1 else n-1), jogo)
-    | k == KeyDown = (PlayMenu (if n+1 >= (length niveis) then 0 else n+1), jogo)
-    | k == KeyEnter = (ModoJogo nivel, nivel)
-    | otherwise = (PlayMenu n, jogo)
+eventPlayMenu :: Event -> BlockDude -> BlockDude
+eventPlayMenu (EventKey (SpecialKey k) Down  _ _ ) (PlayMenu n, (niveis, atual), texturas)
+    | k == KeyLeft = (PlayMenu (if n-1 < 0 then n else n-1), (niveis, atual), texturas)
+    | k == KeyRight = (PlayMenu (if n+1 > atual then n else n+1), (niveis, atual), texturas)
+    | k == KeyEnter = (ModoJogo jogo n 0, (niveis, atual), texturas)
+    | otherwise = (PlayMenu n, (niveis, atual), texturas)
     where
-        niveis = [jogoFAQ1, jogoFAQ2, jogoFAQ3]
-        nivel = niveis !! n
-eventPlayMenu _ w = w
+        jogo = fst3 (niveis !! n)
+eventPlayMenu _ bd = bd
 
-eventModoJogo :: Event -> World -> World
-eventModoJogo (EventKey (SpecialKey KeyUp) Down _ _ ) (ModoJogo estadoJogo, jogo) = (ModoJogo (moveJogador estadoJogo Trepar), jogo)
-eventModoJogo (EventKey (SpecialKey KeyDown) Down _ _ ) (ModoJogo estadoJogo, jogo) = (ModoJogo (moveJogador estadoJogo InterageCaixa), jogo)
-eventModoJogo (EventKey (SpecialKey KeyLeft) Down _ _ ) (ModoJogo estadoJogo, jogo) = (ModoJogo (moveJogador estadoJogo AndarEsquerda), jogo)
-eventModoJogo (EventKey (SpecialKey KeyRight) Down _ _ ) (ModoJogo estadoJogo, jogo) = (ModoJogo (moveJogador estadoJogo AndarDireita), jogo)
-eventModoJogo (EventKey (Char r) Down _ _ ) (ModoJogo estadoJogo, jogo) = (ModoJogo jogo, jogo)
-eventModoJogo _ (ModoJogo (Jogo mapa (Jogador c d b)), jogo)
-    | acederPeca mapa c == Porta = (VenceuJogo, jogo)
-    | otherwise = (ModoJogo (Jogo mapa (Jogador c d b)), jogo)
+eventModoJogo :: Event -> BlockDude -> BlockDude
+eventModoJogo (EventKey (SpecialKey KeyUp) Down _ _ ) (ModoJogo estadoJogo n m, niveis, texturas) = (ModoJogo (moveJogador estadoJogo Trepar) n (m+1), niveis, texturas)
+eventModoJogo (EventKey (SpecialKey KeyDown) Down _ _ ) (ModoJogo estadoJogo n m, niveis, texturas) = (ModoJogo (moveJogador estadoJogo InterageCaixa) n (m+1), niveis, texturas)
+eventModoJogo (EventKey (SpecialKey KeyLeft) Down _ _ ) (ModoJogo estadoJogo n m, niveis, texturas) = (ModoJogo (moveJogador estadoJogo AndarEsquerda) n (m+1), niveis, texturas)
+eventModoJogo (EventKey (SpecialKey KeyRight) Down _ _ ) (ModoJogo estadoJogo n m, niveis, texturas) = (ModoJogo (moveJogador estadoJogo AndarDireita) n (m+1), niveis, texturas)
+eventModoJogo (EventKey (Char r) Down _ _ ) (ModoJogo estadoJogo n m, (niveis, atual), texturas) = (ModoJogo (fst3 (niveis !! n)) n 0, (niveis, atual), texturas)
+eventModoJogo _ (ModoJogo (Jogo mapa (Jogador c d b)) n m, (niveis, atual), texturas)
+    | acederPeca mapa c == Porta && atual == n = (VenceuJogo, (atualizaMovs m niveis n, atual+1), texturas)
+    | acederPeca mapa c == Porta = (VenceuJogo, (atualizaMovs m niveis n, atual), texturas)
+    | otherwise = (ModoJogo (Jogo mapa (Jogador c d b)) n m, (niveis, atual), texturas)
+
+atualizaMovs :: Movimentos -> [Nivel] -> NivelID -> [Nivel]
+atualizaMovs m niveis id
+    | min == Nothing = inicio ++ [(jogo, Just m, opt)] ++ fim
+    | otherwise = inicio ++ [nivelAtualizado] ++ fim
+    where
+        (jogo, min, opt) = niveis !! id
+        inicio = take id niveis
+        fim = drop (id+1) niveis
+        movMin = fromJust min
+        nivelAtualizado = (jogo, Just (if m < movMin then m else movMin), opt)
 
 
+fst3 :: (a, b, c) -> a
+fst3 (x, y, z) = x
 
-time :: Float -> World -> World
+time :: Float -> BlockDude -> BlockDude
 time _ w = w
 
-estado :: World
-estado = (MainMenu Jogar, jogoFAQ1)
+estado :: Niveis -> Texturas -> BlockDude
+estado n t = (MainMenu Jogar, n, t)
 
+loadTexturas :: [[Picture]] -> Texturas
+loadTexturas [[b,e]] = ([mEstrela], 0)
+    where
+        mBloco = Data.Map.insert TexturaBloco b Data.Map.empty
+        mEstrela = Data.Map.insert TexturaEstrela (Scale x x $ e) mBloco
+        x = (fromIntegral dimensaoBloco) / 400
 
 main :: IO ()
 main = do
     imagemBloco <- loadBMP "../assets/bloco.bmp"
+    imagemEstrela <- loadBMP "../assets/star.bmp"
     dimensoes <- getScreenSize
-    play (window dimensoes) white fr estado draw event time
-
-
-
+    play (window dimensoes) white fr (estado loadNiveis (loadTexturas [[imagemBloco, imagemEstrela]])) draw event time
 
 
 
