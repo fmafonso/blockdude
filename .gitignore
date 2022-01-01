@@ -22,6 +22,7 @@ cabal.project.local
 cabal.project.local~
 .HTF/
 .ghc.environment.*
+Tarefa5_2021lig032
 
 ### Documentacao ###
 doc/

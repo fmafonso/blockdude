@@ -4,7 +4,7 @@ import LI12122
 import Tarefa4_2021li1g032
 import Tarefa3_2021li1g032
 import Data.Maybe
-import Data.HashMap (Map, empty, insert, lookup, toList)
+import Data.Map (Map, empty, insert, lookup, toList, unionWith)
 
 -- quando encontra caminho com x movimentos o max das outras alternativas passa a ser x
 resolveJogo :: Int -> Jogo -> Maybe [Movimento]
@@ -12,18 +12,18 @@ resolveJogo x jogo
     | caminho == Nothing = caminho
     | length (fromJust caminho) <= x = caminho
     | otherwise = Nothing
-    where caminho = fst (aux jogo x Data.HashMap.empty)
+    where caminho = fst (aux jogo x Data.Map.empty)
 
 aux :: Jogo -> Int -> Map Jogo (Int, Maybe [Movimento]) -> (Maybe [Movimento], Map Jogo (Int, Maybe [Movimento]))
 aux jogo max visitados
     | value /= Nothing && max <= fst (fromJust value) = (snd (fromJust value), visitados)
     | max < 0 = (Nothing, visitados)
-    | estaResolvido jogo = (Just [], Data.HashMap.insert jogo (max, Just []) (snd auxInterage))
-    | otherwise = (caminhoMaisCurto, Data.HashMap.insert jogo (max, caminhoMaisCurto) (snd auxInterage))
+    | estaResolvido jogo = (Just [], Data.Map.insert jogo (max, Just []) (snd auxInterage))
+    | otherwise = (caminhoMaisCurto, Data.Map.insert jogo (max, caminhoMaisCurto) (snd auxInterage))
     where
-        value = Data.HashMap.lookup jogo visitados
+        value = Data.Map.lookup jogo visitados
         visitadosFrente
-            | value == Nothing = Data.HashMap.insert jogo (max, Nothing) visitados
+            | value == Nothing = Data.Map.insert jogo (max, Nothing) visitados
             | otherwise = visitados
         auxDireita = aux (moveJogador jogo AndarDireita) (max-1) visitadosFrente
         auxEsquerda = aux (moveJogador jogo AndarEsquerda) (max-1) (snd auxDireita)
@@ -34,7 +34,7 @@ aux jogo max visitados
         moveTrepar = insereMaybeLista Trepar (fst auxTrepar)
         moveInterage = insereMaybeLista InterageCaixa (fst auxInterage)
         caminhoMaisCurto = juntaMaybeLista [moveDireita, moveEsquerda, moveTrepar, moveInterage]
-        --todosOsVisitados = juntaHashMap (map snd [auxDireita, auxEsquerda, auxTrepar, auxInterage])
+        --todosOsVisitados = juntaMap (map snd [auxDireita, auxEsquerda, auxTrepar, auxInterage])
 {--
 aux "P  <" 3 M[]
 value=Nothing visitadosFrente=M[("P  <",Nothing)]
@@ -94,21 +94,29 @@ juntaMaybeLista (h1:h2:t)
     | length (fromJust h1) <= length (fromJust h2) = juntaMaybeLista (h1:t)
     | otherwise = juntaMaybeLista (h2:t)
 
-juntaHashMap :: [Map Jogo (Maybe [Movimento])] -> Map Jogo (Maybe [Movimento])
-juntaHashMap [] = Data.HashMap.empty
-juntaHashMap [e] = e
-juntaHashMap (h1:h2:t) = juntaHashMap ((juntaHashMapAux (Data.HashMap.toList h1) h2) : t)
+unionMaybeLista :: Eq a => Maybe [a] -> Maybe [a] -> Maybe [a]
+unionMaybeLista l1 Nothing = l1
+unionMaybeLista Nothing l2 = l2
+unionMaybeLista (Just l1) (Just l2)
+    | length l1 <= length l2 = Just l1
+    | otherwise = Just l2
 
-juntaHashMapAux :: [(Jogo, (Maybe [Movimento]))] -> Map Jogo (Maybe [Movimento]) -> Map Jogo (Maybe [Movimento])
-juntaHashMapAux [] hm = hm
-juntaHashMapAux ((jogo, lista):t) hm
-    | coiso == Nothing = Data.HashMap.insert jogo lista hm
-    | otherwise = Data.HashMap.insert jogo (juntaMaybeLista [lista,(fromJust coiso)]) hm
-    where
-        coiso = Data.HashMap.lookup jogo hm
+juntaMap :: [Map Jogo (Maybe [Movimento])] -> Map Jogo (Maybe [Movimento])
+juntaMap [] = Data.Map.empty
+juntaMap [e] = e
+juntaMap (h1:h2:t) = juntaMap ((Data.Map.unionWith unionMaybeLista h1 h2) : t)
+-- juntaMap (h1:h2:t) = juntaMap ((juntaMapAux (Data.Map.toList h1) h2) : t)
+
+-- juntaMapAux :: [(Jogo, (Maybe [Movimento]))] -> Map Jogo (Maybe [Movimento]) -> Map Jogo (Maybe [Movimento])
+-- juntaMapAux [] hm = hm
+-- juntaMapAux ((jogo, lista):t) hm
+--     | coiso == Nothing = Data.Map.insert jogo lista hm
+--     | otherwise = Data.Map.insert jogo (juntaMaybeLista [lista,(fromJust coiso)]) hm
+--     where
+--         coiso = Data.Map.lookup jogo hm
 
 juntaResultados :: [(Maybe [Movimento], Map Jogo (Maybe [Movimento]))] -> (Maybe [Movimento], Map Jogo (Maybe [Movimento]))
-juntaResultados l = (juntaMaybeLista (map fst l), juntaHashMap (map snd l))
+juntaResultados l = (juntaMaybeLista (map fst l), juntaMap (map snd l))
 
 -- verificaSeVisitado :: Jogo -> [Jogo] -> Bool
 -- verificaSeVisitado jogo visitados = elem jogo visitados
@@ -173,17 +181,54 @@ jogador2 = Jogador (3,0) Oeste False
 jogo2 :: Jogo
 jogo2 = Jogo mapa2 jogador2
 
-mapaFAQ2 :: [(Peca,Coordenadas)]
-mapaFAQ2 =
-  [ (Bloco,(0,0)), (Bloco, (0,1)), (Bloco,(0,2)), (Bloco,(0,3)), (Bloco,(0,4)),
-    (Bloco,(0,5)), (Bloco,(0,6)), (Porta,(1,5)), (Bloco,(1,6)), (Bloco,(2,6)),
-    (Bloco,(3,6)), (Bloco,(4,4)), (Bloco,(4,5)), (Bloco,(4,6)), (Bloco,(5,6)),
-    (Bloco,(6,6)), (Bloco,(7,6)), (Bloco,(8,5)), (Bloco,(8,6)), (Bloco,(9,6)),
-    (Caixa,(10,5)), (Bloco,(10,6)), (Bloco,(11,6)), (Bloco,(12,4)), (Bloco,(12,5)),
-    (Bloco,(12,6)), (Bloco,(13,6)), (Caixa,(14,5)), (Bloco,(14,6)), (Bloco,(15,6)),
-    (Bloco,(16,6)), (Bloco,(17,6)), (Bloco,(18,6)), (Bloco,(19,0)), (Bloco,(19,1)),
-    (Bloco,(19,2)), (Bloco,(19,3)), (Bloco,(19,4)), (Bloco,(19,5)), (Bloco,(19,6))
+
+
+mapaFAQ1r :: Mapa
+mapaFAQ1r =
+  [ [Vazio,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio],
+    [Vazio,Bloco,Vazio,Vazio,Vazio,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Vazio],
+    [Bloco,Vazio,Bloco,Vazio,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Bloco],
+    [Bloco,Vazio,Vazio,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Bloco],
+    [Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Caixa,Bloco],
+    [Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Caixa,Caixa,Bloco],
+    [Bloco,Vazio,Bloco,Bloco,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Bloco,Caixa,Vazio,Bloco,Bloco,Vazio],
+    [Bloco,Vazio,Bloco,Vazio,Bloco,Vazio,Vazio,Vazio,Vazio,Bloco,Vazio,Vazio,Bloco,Bloco,Bloco,Bloco,Bloco,Vazio,Vazio],
+    [Bloco,Vazio,Bloco,Vazio,Bloco,Caixa,Caixa,Vazio,Bloco,Bloco,Vazio,Vazio,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio],
+    [Bloco,Porta,Bloco,Vazio,Bloco,Bloco,Bloco,Bloco,Bloco,Bloco,Vazio,Bloco,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio],
+    [Bloco,Bloco,Bloco,Vazio,Bloco,Bloco,Vazio,Vazio,Vazio,Bloco,Bloco,Bloco,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio,Vazio]
   ]
+
+jogoFAQ1 :: Jogo
+jogoFAQ1 = Jogo mapaFAQ1r (Jogador (9,6) Oeste False)
+
+tapaBuracoM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa]
+fazDegrauM1 = [AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa]
+moveCaixaDireitaM1 = [Trepar,Trepar,Trepar,AndarDireita,AndarDireita,AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa]
+fazPassagemMeioM1 = [Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa]
+movRepEsquerdaM1 = [AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda]
+movRepDireitaM1 = [AndarDireita,Trepar,Trepar,AndarDireita,AndarDireita,Trepar,Trepar,AndarDireita]
+pegaEscada1M1 = [AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa]
+poeEscada1M1 = movRepEsquerdaM1 ++ [AndarEsquerda,InterageCaixa]
+pegaEscada2M1 = movRepDireitaM1 ++ [Trepar,AndarDireita,InterageCaixa]
+poeEscada2M1 = [AndarEsquerda] ++ movRepEsquerdaM1 ++ [InterageCaixa]
+pegaEscada3M1 = movRepDireitaM1 ++ [InterageCaixa]
+poeEscada3M1 = movRepEsquerdaM1 ++ [Trepar,InterageCaixa]
+fimMapa1 = [Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
+movimentosM1 = tapaBuracoM1++fazDegrauM1++moveCaixaDireitaM1++fazPassagemMeioM1++pegaEscada1M1++poeEscada1M1++pegaEscada2M1++poeEscada2M1++pegaEscada3M1++poeEscada3M1++fimMapa1
+
+
+-- movimentosMelhoresM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,
+-- AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,Trepar,AndarDireita,AndarDireita,
+-- AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,InterageCaixa,AndarEsquerda,
+-- AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa,
+-- AndarEsquerda,Trepar,InterageCaixa,AndarDireita,Trepar,AndarDireita,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,
+-- AndarEsquerda,InterageCaixa,AndarDireita,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
+-- AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,
+-- InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,
+-- InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,Trepar,InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
+
+
+
 
 mapaFAQ2r :: Mapa
 mapaFAQ2r =
