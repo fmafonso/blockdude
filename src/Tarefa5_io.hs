@@ -2,12 +2,16 @@
 
 module Tarefa5_io where
 
-import GHC.Generics
+import Data.Char
+import Data.List
 import Data.Map
+import Data.Maybe
+import GHC.Generics
+
 import Graphics.Gloss
 import Data.Aeson
 import Data.ByteString.Lazy.Char8 as Char8
-import Data.Maybe
+
 import LI12122
 import Tarefa5_types
 import Tarefa2_2021li1g032
@@ -133,6 +137,16 @@ loadTextura "creditosR" = TexturaCreditosR
 loadTextura "creditos" = TexturaCreditos
 loadTextura "sairR" = TexturaSairR
 loadTextura "sair" = TexturaSair
+loadTextura "pacoteR" = TexturaPackR
+loadTextura "pacote" = TexturaPack
+loadTextura "backR" = TexturaBackR
+loadTextura "back" = TexturaBack
+loadTextura "nivel" = TexturaNivel
+loadTextura "venceu" = TexturaVenceu
+loadTextura "guardou" = TexturaGuardou
+loadTextura t
+    | Data.List.isPrefixOf "numeroR" t = TexturaNumeroR (digitToInt (Prelude.last t))
+    | Data.List.isPrefixOf "numero" t = TexturaNumero (digitToInt (Prelude.last t))
 
 
 saveTextura :: Textura -> String
@@ -155,6 +169,15 @@ saveTextura TexturaCreditosR = "creditosR"
 saveTextura TexturaCreditos = "creditos"
 saveTextura TexturaSairR = "sairR"
 saveTextura TexturaSair = "sair"
+saveTextura TexturaPackR = "pacoteR"
+saveTextura TexturaPack = "pacote"
+saveTextura TexturaBackR = "backR"
+saveTextura TexturaBack = "back"
+saveTextura TexturaNivel = "nivel"
+saveTextura TexturaVenceu = "venceu"
+saveTextura TexturaGuardou = "guardou"
+saveTextura (TexturaNumeroR x) = "numeroR" ++ show x
+saveTextura (TexturaNumero x) = "numero" ++ show x
 
 loadCor :: ColorJSON -> Color
 loadCor json = makeColorI (r json) (g json) (b json) 255

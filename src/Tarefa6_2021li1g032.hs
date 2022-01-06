@@ -1,29 +1,34 @@
-module Tarefa6_2021li1g032 where
+--module Tarefa6_2021li1g032 where
 
 import LI12122
 import Tarefa4_2021li1g032
 import Tarefa3_2021li1g032
 import Data.Maybe
-import Data.Map (Map, empty, insert, lookup, toList, unionWith)
+import qualified Data.Map as M (Map, empty, insert, lookup, toList, unionWith)
 
--- quando encontra caminho com x movimentos o max das outras alternativas passa a ser x
+
+
+data DoubleMap outerKey innerKey value = DMap (M.Map outerKey (M.Map innerKey value))
+
+
 resolveJogo :: Int -> Jogo -> Maybe [Movimento]
 resolveJogo x jogo
     | caminho == Nothing = caminho
     | length (fromJust caminho) <= x = caminho
     | otherwise = Nothing
-    where caminho = fst (aux jogo x Data.Map.empty)
+    where caminho = fst (aux jogo x (DMap M.empty))
 
-aux :: Jogo -> Int -> Map Jogo (Int, Maybe [Movimento]) -> (Maybe [Movimento], Map Jogo (Int, Maybe [Movimento]))
+
+aux :: Jogo -> Int -> DoubleMap Mapa Jogador (Int, Maybe [Movimento]) -> (Maybe [Movimento], DoubleMap Mapa Jogador (Int, Maybe [Movimento]))
 aux jogo max visitados
     | value /= Nothing && max <= fst (fromJust value) = (snd (fromJust value), visitados)
     | max < 0 = (Nothing, visitados)
-    | estaResolvido jogo = (Just [], Data.Map.insert jogo (max, Just []) (snd auxInterage))
-    | otherwise = (caminhoMaisCurto, Data.Map.insert jogo (max, caminhoMaisCurto) (snd auxInterage))
+    | estaResolvido jogo = (Just [], insere jogo (max, Just []) (snd auxInterage))
+    | otherwise = (caminhoMaisCurto, insere jogo (max, caminhoMaisCurto) (snd auxInterage))
     where
-        value = Data.Map.lookup jogo visitados
+        value = procura jogo visitados
         visitadosFrente
-            | value == Nothing = Data.Map.insert jogo (max, Nothing) visitados
+            | value == Nothing = insere jogo (max, Nothing) visitados
             | otherwise = visitados
         auxDireita = aux (moveJogador jogo AndarDireita) (max-1) visitadosFrente
         auxEsquerda = aux (moveJogador jogo AndarEsquerda) (max-1) (snd auxDireita)
@@ -34,47 +39,21 @@ aux jogo max visitados
         moveTrepar = insereMaybeLista Trepar (fst auxTrepar)
         moveInterage = insereMaybeLista InterageCaixa (fst auxInterage)
         caminhoMaisCurto = juntaMaybeLista [moveDireita, moveEsquerda, moveTrepar, moveInterage]
-        --todosOsVisitados = juntaMap (map snd [auxDireita, auxEsquerda, auxTrepar, auxInterage])
-{--
-aux "P  <" 3 M[]
-value=Nothing visitadosFrente=M[("P  <",Nothing)]
 
-    auxDireita=
-    =aux "P  >" 2 M[("P  <",Nothing)]
-    value=Nothing visitadosFrente=M[("P  <",Nothing),("P  >",Nothing)]
-        auxDireita=
-        =aux "P  >" 1 M[("P  <",Nothing),("P  >",Nothing)]
-        value=Just Nothing
-        return (Nothing, M[("P  <",Nothing),("P  >",Nothing)])
-        
-        auxEsquerda=
-        =aux "P < " 1 M[("P  <",Nothing),("P  >",Nothing)]
-        value=Nothing visitadosFrente=M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)]
-            auxDireita=
-            =aux "P  >" 0 M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)]
-            value=Just Nothing
-            return (Nothing, M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
-            
-            auxEsquerda=
-            value=Nothing
-                auxDireita=
-                =aux "P  >" -1 M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)]
-                value=Just Nothing
-                return (Nothing, M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
-                
-                auxEsquerda=
-                value=Nothing
-                return (Nothing, -1 M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
 
-            ?????return (Nothing, M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
-        return (Nothing, M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
-    return (Nothing, M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
 
-    auxEsquerda=
-    =aux "P < " 2 M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
-    value=Just Nothing
-    return (Nothing, M[("P  <",Nothing),("P  >",Nothing),("P < ",Nothing)])
---}
+insere :: Eq v => Jogo -> v -> DoubleMap Mapa Jogador v -> DoubleMap Mapa Jogador v
+insere (Jogo mapa jogador) v (DMap dMap) = DMap (M.insert mapa (M.insert jogador v innerMap) dMap)
+    where
+        procuraMapa = M.lookup mapa dMap
+        innerMap = if procuraMapa == Nothing then M.empty else fromJust procuraMapa
+
+procura :: Eq v => Jogo -> DoubleMap Mapa Jogador v -> Maybe v
+procura (Jogo mapa jogador) (DMap dMap)
+    | procuraMapa == Nothing = Nothing
+    | otherwise = M.lookup jogador (fromJust procuraMapa)
+    where procuraMapa = M.lookup mapa dMap
+
 
 insereMaybeLista :: Eq a => a -> Maybe [a] -> Maybe [a]
 insereMaybeLista x lista
@@ -101,65 +80,14 @@ unionMaybeLista (Just l1) (Just l2)
     | length l1 <= length l2 = Just l1
     | otherwise = Just l2
 
-juntaMap :: [Map Jogo (Maybe [Movimento])] -> Map Jogo (Maybe [Movimento])
-juntaMap [] = Data.Map.empty
+juntaMap :: [M.Map Jogo (Maybe [Movimento])] -> M.Map Jogo (Maybe [Movimento])
+juntaMap [] = M.empty
 juntaMap [e] = e
-juntaMap (h1:h2:t) = juntaMap ((Data.Map.unionWith unionMaybeLista h1 h2) : t)
--- juntaMap (h1:h2:t) = juntaMap ((juntaMapAux (Data.Map.toList h1) h2) : t)
+juntaMap (h1:h2:t) = juntaMap ((M.unionWith unionMaybeLista h1 h2) : t)
 
--- juntaMapAux :: [(Jogo, (Maybe [Movimento]))] -> Map Jogo (Maybe [Movimento]) -> Map Jogo (Maybe [Movimento])
--- juntaMapAux [] hm = hm
--- juntaMapAux ((jogo, lista):t) hm
---     | coiso == Nothing = Data.Map.insert jogo lista hm
---     | otherwise = Data.Map.insert jogo (juntaMaybeLista [lista,(fromJust coiso)]) hm
---     where
---         coiso = Data.Map.lookup jogo hm
-
-juntaResultados :: [(Maybe [Movimento], Map Jogo (Maybe [Movimento]))] -> (Maybe [Movimento], Map Jogo (Maybe [Movimento]))
+juntaResultados :: [(Maybe [Movimento], M.Map Jogo (Maybe [Movimento]))] -> (Maybe [Movimento], M.Map Jogo (Maybe [Movimento]))
 juntaResultados l = (juntaMaybeLista (map fst l), juntaMap (map snd l))
 
--- verificaSeVisitado :: Jogo -> [Jogo] -> Bool
--- verificaSeVisitado jogo visitados = elem jogo visitados
-
--- adicionaNaLista :: Jogo -> [Jogo] -> [Jogo]
--- adicionaNaLista jogo visitados
---     | verificaSeVisitado jogo visitados = visitados
---     | otherwise = jogo : visitados
-
-
--- verificaSeNovoJogo :: Jogo -> Movimento -> [Jogo] -> Bool
--- verificaSeNovoJogo jogo mov visitados = elem (moveJogador jogo mov) visitados
-
--- adicionaNaListaB :: Jogo -> Movimento -> [Jogo] -> [Jogo]
--- adicionaNaListaB jogo mov visitados
---     | verificaSeNovoJogo jogo mov visitados = visitados
---     | otherwise = (moveJogador jogo mov) : visitados
-
--- adicionaNaListaBT :: Jogo -> Movimento -> [Jogo] -> (Bool, [Jogo])
--- adicionaNaListaBT jogo mov visitados
---     | verificaSeNovoJogo jogo mov visitados = (True, visitados)
---     | otherwise = (False, (moveJogador jogo mov) : visitados)
-
--- converteResultado :: [Movimento] -> Maybe [Movimento]
--- converteResultado [] = Nothing
--- converteResultado movs = Just movs
-
-
--- executaMovimentos :: Jogo -> [Jogo]
--- executaMovimentos jogo = [jogoDireita, jogoEsquerda, jogoTrepar, jogoInterage]
---     where
---         jogoDireita = moveJogador jogo AndarDireita
---         jogoEsquerda = moveJogador jogo AndarEsquerda
---         jogoTrepar = moveJogador jogo Trepar
---         jogoInterage = moveJogador jogo Interage
-
--- executaMovimentos2 :: Jogo -> [(Movimento, Jogo)]
--- executaMovimentos2 jogo = [jogoDireita, jogoEsquerda, jogoTrepar, jogoInterage]
---     where
---         jogoDireita = (AndarDireita, moveJogador jogo AndarDireita)
---         jogoEsquerda = (AndarEsquerda, moveJogador jogo AndarEsquerda)
---         jogoTrepar = (Trepar, moveJogador jogo Trepar)
---         jogoInterage = (InterageCaixa, moveJogador jogo InterageCaixa)
 
 mapa1 :: Mapa
 mapa1 = [[Porta],[Bloco]]
@@ -217,15 +145,15 @@ fimMapa1 = [Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
 movimentosM1 = tapaBuracoM1++fazDegrauM1++moveCaixaDireitaM1++fazPassagemMeioM1++pegaEscada1M1++poeEscada1M1++pegaEscada2M1++poeEscada2M1++pegaEscada3M1++poeEscada3M1++fimMapa1
 
 
--- movimentosMelhoresM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,
--- AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,Trepar,AndarDireita,AndarDireita,
--- AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,InterageCaixa,AndarEsquerda,
--- AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa,
--- AndarEsquerda,Trepar,InterageCaixa,AndarDireita,Trepar,AndarDireita,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,
--- AndarEsquerda,InterageCaixa,AndarDireita,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
--- AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,
--- InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,
--- InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,Trepar,InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
+movimentosMelhoresM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,
+AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,Trepar,AndarDireita,AndarDireita,
+AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,InterageCaixa,AndarEsquerda,
+AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa,
+AndarEsquerda,Trepar,InterageCaixa,AndarDireita,Trepar,AndarDireita,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,
+AndarEsquerda,InterageCaixa,AndarDireita,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
+AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,
+InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,
+InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,Trepar,InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
 
 
 
@@ -326,3 +254,9 @@ fimMapa3 = [AndarEsquerda, Trepar]
 
 movimentosM3 :: [Movimento]
 movimentosM3 = meteCaixa1 ++ meteCaixa2 ++ meteCaixa3 ++ poeCaixaVoltar ++ poeCimaEsquerda ++ pegaCaixaSegundaFila ++ terminaEscadaMeio ++ pegaBaixoEsquerda ++ largaCaixaEsquerda ++ pegarPenultimaCaixa ++ porCaixaEsquerda ++ tapaBuraco ++ fimMapa3
+
+
+main = do
+  let a = resolveJogo 30 jogoFAQ3
+  print a
+  print (length (fromJust a))

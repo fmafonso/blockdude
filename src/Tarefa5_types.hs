@@ -47,6 +47,15 @@ data Textura = TexturaBloco
              | TexturaCreditos
              | TexturaSairR
              | TexturaSair
+             | TexturaPackR
+             | TexturaPack
+             | TexturaBackR
+             | TexturaBack
+             | TexturaNivel
+             | TexturaVenceu
+             | TexturaGuardou
+             | TexturaNumeroR Int
+             | TexturaNumero Int
     deriving (Eq, Ord, Show)
 
 type Texturas = ([(Map Textura (PictureInfo, Picture), Color)], Int)
@@ -69,10 +78,6 @@ type DimJanela = Coordenadas
 type PosJogador = Coordenadas
 type Camara = (Coordenadas, Coordenadas)
 
--- loadNiveis :: Niveis
--- loadNiveis = ([
---     (jogoFAQ1, Nothing, 97), (jogoFAQ2, Nothing, 19), (jogoFAQ3, Nothing, 129),
---     (jogoFAQ1, Nothing, 97), (jogoFAQ2, Nothing, 19), (jogoFAQ3, Nothing, 129)], 3)
 
 dimensaoBloco :: Int
 dimensaoBloco = 40
