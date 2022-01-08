@@ -1,4 +1,4 @@
---module Tarefa6_2021li1g032 where
+module Tarefa6_2021li1g032 where
 
 import LI12122
 import Tarefa4_2021li1g032
@@ -18,8 +18,7 @@ resolveJogo x jogo
     | otherwise = Nothing
     where caminho = fst (aux jogo x (DMap M.empty))
 
-
-aux :: Jogo -> Int -> DoubleMap Mapa Jogador (Int, Maybe [Movimento]) -> (Maybe [Movimento], DoubleMap Mapa Jogador (Int, Maybe [Movimento]))
+aux :: Jogo -> Int -> DoubleMap Jogador Mapa (Int, Maybe [Movimento]) -> (Maybe [Movimento], DoubleMap Jogador Mapa (Int, Maybe [Movimento]))
 aux jogo max visitados
     | value /= Nothing && max <= fst (fromJust value) = (snd (fromJust value), visitados)
     | max < 0 = (Nothing, visitados)
@@ -42,17 +41,17 @@ aux jogo max visitados
 
 
 
-insere :: Eq v => Jogo -> v -> DoubleMap Mapa Jogador v -> DoubleMap Mapa Jogador v
-insere (Jogo mapa jogador) v (DMap dMap) = DMap (M.insert mapa (M.insert jogador v innerMap) dMap)
+insere :: Eq v => Jogo -> v -> DoubleMap Jogador Mapa v -> DoubleMap Jogador Mapa v
+insere (Jogo mapa jogador) v (DMap dMap) = DMap (M.insert jogador (M.insert mapa v innerMap) dMap)
     where
-        procuraMapa = M.lookup mapa dMap
+        procuraMapa = M.lookup jogador dMap
         innerMap = if procuraMapa == Nothing then M.empty else fromJust procuraMapa
 
-procura :: Eq v => Jogo -> DoubleMap Mapa Jogador v -> Maybe v
+procura :: Eq v => Jogo -> DoubleMap Jogador Mapa v -> Maybe v
 procura (Jogo mapa jogador) (DMap dMap)
     | procuraMapa == Nothing = Nothing
-    | otherwise = M.lookup jogador (fromJust procuraMapa)
-    where procuraMapa = M.lookup mapa dMap
+    | otherwise = M.lookup mapa (fromJust procuraMapa)
+    where procuraMapa = M.lookup jogador dMap
 
 
 insereMaybeLista :: Eq a => a -> Maybe [a] -> Maybe [a]
@@ -73,20 +72,20 @@ juntaMaybeLista (h1:h2:t)
     | length (fromJust h1) <= length (fromJust h2) = juntaMaybeLista (h1:t)
     | otherwise = juntaMaybeLista (h2:t)
 
-unionMaybeLista :: Eq a => Maybe [a] -> Maybe [a] -> Maybe [a]
-unionMaybeLista l1 Nothing = l1
-unionMaybeLista Nothing l2 = l2
-unionMaybeLista (Just l1) (Just l2)
-    | length l1 <= length l2 = Just l1
-    | otherwise = Just l2
+-- unionMaybeLista :: Eq a => Maybe [a] -> Maybe [a] -> Maybe [a]
+-- unionMaybeLista l1 Nothing = l1
+-- unionMaybeLista Nothing l2 = l2
+-- unionMaybeLista (Just l1) (Just l2)
+--     | length l1 <= length l2 = Just l1
+--     | otherwise = Just l2
 
-juntaMap :: [M.Map Jogo (Maybe [Movimento])] -> M.Map Jogo (Maybe [Movimento])
-juntaMap [] = M.empty
-juntaMap [e] = e
-juntaMap (h1:h2:t) = juntaMap ((M.unionWith unionMaybeLista h1 h2) : t)
+-- juntaMap :: [M.Map Jogo (Maybe [Movimento])] -> M.Map Jogo (Maybe [Movimento])
+-- juntaMap [] = M.empty
+-- juntaMap [e] = e
+-- juntaMap (h1:h2:t) = juntaMap ((M.unionWith unionMaybeLista h1 h2) : t)
 
-juntaResultados :: [(Maybe [Movimento], M.Map Jogo (Maybe [Movimento]))] -> (Maybe [Movimento], M.Map Jogo (Maybe [Movimento]))
-juntaResultados l = (juntaMaybeLista (map fst l), juntaMap (map snd l))
+-- juntaResultados :: [(Maybe [Movimento], M.Map Jogo (Maybe [Movimento]))] -> (Maybe [Movimento], M.Map Jogo (Maybe [Movimento]))
+-- juntaResultados l = (juntaMaybeLista (map fst l), juntaMap (map snd l))
 
 
 mapa1 :: Mapa
@@ -145,15 +144,15 @@ fimMapa1 = [Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
 movimentosM1 = tapaBuracoM1++fazDegrauM1++moveCaixaDireitaM1++fazPassagemMeioM1++pegaEscada1M1++poeEscada1M1++pegaEscada2M1++poeEscada2M1++pegaEscada3M1++poeEscada3M1++fimMapa1
 
 
-movimentosMelhoresM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,
-AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,Trepar,AndarDireita,AndarDireita,
-AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,InterageCaixa,AndarEsquerda,
-AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa,
-AndarEsquerda,Trepar,InterageCaixa,AndarDireita,Trepar,AndarDireita,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,
-AndarEsquerda,InterageCaixa,AndarDireita,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
-AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,
-InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,
-InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,Trepar,InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
+-- movimentosMelhoresM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,
+-- AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,Trepar,AndarDireita,AndarDireita,
+-- AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,InterageCaixa,AndarEsquerda,
+-- AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa,
+-- AndarEsquerda,Trepar,InterageCaixa,AndarDireita,Trepar,AndarDireita,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,
+-- AndarEsquerda,InterageCaixa,AndarDireita,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
+-- AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,
+-- InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,
+-- InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,Trepar,InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
 
 
 
@@ -256,7 +255,6 @@ movimentosM3 :: [Movimento]
 movimentosM3 = meteCaixa1 ++ meteCaixa2 ++ meteCaixa3 ++ poeCaixaVoltar ++ poeCimaEsquerda ++ pegaCaixaSegundaFila ++ terminaEscadaMeio ++ pegaBaixoEsquerda ++ largaCaixaEsquerda ++ pegarPenultimaCaixa ++ porCaixaEsquerda ++ tapaBuraco ++ fimMapa3
 
 
-main = do
-  let a = resolveJogo 30 jogoFAQ3
-  print a
-  print (length (fromJust a))
+-- main = do
+--   let a = resolveJogo 94 jogoFAQ1
+--   print a
