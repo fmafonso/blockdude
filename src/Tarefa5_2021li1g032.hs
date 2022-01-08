@@ -17,16 +17,17 @@ import Tarefa5_events
 import Tarefa5_io
 import Tarefa5_types
 
+-- | Frame rate da janela
 fr :: Int
 fr = 25
 
 time :: Float -> BlockDude -> IO BlockDude
 time _ w = return w
 
+-- | Cor do fundo
 background :: BlockDude -> Color
 background (janela, niveis, (texturas, tID)) = color
     where (_, color) = texturas !! tID
--- makeColorI 109 174 255 255
 
 main :: IO ()
 main = do

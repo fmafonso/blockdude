@@ -1,9 +1,11 @@
+{-# LANGUAGE DeriveGeneric #-}
 {- |
 Module      : LI12122
 Description : Módulo auxiliar para LI1 21/22
 
 Tipos de dados e funções auxiliares para a realização do projeto de LI1 em 2021/22.
  -}
+
 module LI12122 (
     -- * Tipos de dados
     -- ** Básicos
@@ -22,6 +24,7 @@ module LI12122 (
   removeVazios,
   ) where
 
+import GHC.Generics
 
 -- | Par de coordenadas de uma posição no 'Mapa'.
 type Coordenadas = (Int, Int)
@@ -32,7 +35,7 @@ data Peca
   | Caixa -- ^ a caixa é como um bloco mas pode ser movida pelo 'Jogador'
   | Porta -- ^ a porta é a posição final do jogo
   | Vazio -- ^ um espaço vazio no 'Mapa'
-  deriving (Show, Read, Eq, Ord)
+  deriving (Show, Read, Eq, Ord, Generic)
 
 type Mapa = [[Peca]]
 
@@ -40,7 +43,7 @@ type Mapa = [[Peca]]
 data Direcao
   = Este
   | Oeste
-  deriving (Show, Read, Eq, Ord)
+  deriving (Show, Read, Eq, Ord, Generic)
 
 -- | O personagem que é controlado pelo 'Jogador'.
 data Jogador =
@@ -48,14 +51,14 @@ data Jogador =
     Coordenadas -- ^ a posição atual no 'Mapa'
     Direcao -- ^ a direção atual
     Bool -- ^ um booleano que indica se o 'Jogador' está a carregar uma 'Caixa' ou não
-  deriving (Show, Read, Eq, Ord)
+  deriving (Show, Read, Eq, Ord, Generic)
 
 -- | O nível de um jogo, que inclui o puzzle (mapa) e o personagem (jogador).
 data Jogo =
   Jogo
     Mapa -- ^ o puzzle em si
     Jogador -- ^ o personagem do jogo
-  deriving (Read, Eq, Ord)
+  deriving (Read, Eq, Ord, Generic)
 
 -- | Os movimentos que podem ser tomados pelo jogador em cada estado do 'Jogo'.
 data Movimento
@@ -63,8 +66,7 @@ data Movimento
   | AndarDireita -- ^ a ação de andar para a direita
   | Trepar -- ^ a ação de trepar uma caixa ou bloco
   | InterageCaixa -- ^ a ação de pegar ou largar uma caixa
-  deriving (Show, Read, Eq, Ord)
-
+  deriving (Show, Read, Eq, Ord, Generic)
 
 
 -------------------------------------------------------------------------------
@@ -98,7 +100,12 @@ comparaPorCoordenadasYX (_, (x1, y1)) (_, (x2,y2)) = y1 > y2 || y1 == y2 && x1 >
 
 -- | Devolve a peça correspondente às coordenadas no mapa
 acederPeca :: Mapa -> Coordenadas -> Peca
-acederPeca mapa coordPeca = acederPecaAux mapa coordPeca (0, 0)
+acederPeca [] _ = Vazio
+acederPeca mapa (x,y)
+  | y < 0 || x < 0 || y > length mapa || x > length (head mapa) = Vazio
+  | otherwise = (mapa !! y) !! x
+  
+-- acederPecaAux mapa coordPeca (0, 0)
 
 acederPecaAux :: Mapa -> Coordenadas -> Coordenadas -> Peca
 acederPecaAux [] _ _ = Vazio
@@ -110,14 +117,10 @@ acederPecaAux ((h : hs) : t) coordPeca atuais
 
 -- | Insere uma peça numa coordenada do mapa
 inserePeca :: Mapa -> Peca -> Coordenadas -> Mapa
-inserePeca mapa peca coordPeca = inserePecaAux mapa peca coordPeca (0, 0)
-
-inserePecaAux :: Mapa -> Peca -> Coordenadas -> Coordenadas -> Mapa
-inserePecaAux ([]:t) peca coordPeca atuais = [] : inserePecaAux t peca coordPeca (0, snd atuais + 1)
-inserePecaAux ((h : hs) : t) peca coordPeca atuais
-    | coordPeca == atuais = (peca : hs):t
-    | otherwise = (h : head restoDoMapa) : tail restoDoMapa
-    where restoDoMapa = inserePecaAux (hs:t) peca coordPeca (fst atuais + 1, snd atuais)
+inserePeca mapa peca (x,y) = i ++ ((li ++ (peca:lf)): f)
+    where
+        (i,(l:f)) = splitAt y mapa
+        (li,(_:lf)) = splitAt x l
 
 -- | Remove as peças "Vazio" da lista
 removeVazios :: [(Peca, Coordenadas)] -> [(Peca, Coordenadas)]

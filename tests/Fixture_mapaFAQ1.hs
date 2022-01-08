@@ -55,21 +55,18 @@ mapaFAQ1r =
 jogoFAQ1 :: Jogo
 jogoFAQ1 = Jogo mapaFAQ1r (Jogador (9,6) Oeste False)
 
-tapaBuracoM1 = [AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa]
-fazDegrauM1 = [AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa]
-moveCaixaDireitaM1 = [Trepar,Trepar,Trepar,AndarDireita,AndarDireita,AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa]
-fazPassagemMeioM1 = [Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa]
-movRepEsquerdaM1 = [AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda]
-movRepDireitaM1 = [AndarDireita,Trepar,Trepar,AndarDireita,AndarDireita,Trepar,Trepar,AndarDireita]
-pegaEscada1M1 = [AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa]
-poeEscada1M1 = movRepEsquerdaM1 ++ [AndarEsquerda,InterageCaixa]
-pegaEscada2M1 = movRepDireitaM1 ++ [Trepar,AndarDireita,InterageCaixa]
-poeEscada2M1 = [AndarEsquerda] ++ movRepEsquerdaM1 ++ [InterageCaixa]
-pegaEscada3M1 = movRepDireitaM1 ++ [InterageCaixa]
-poeEscada3M1 = movRepEsquerdaM1 ++ [Trepar,InterageCaixa]
-fimMapa1 = [Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda]
-movimentosM1 = tapaBuracoM1++fazDegrauM1++moveCaixaDireitaM1++fazPassagemMeioM1++pegaEscada1M1++poeEscada1M1++pegaEscada2M1++poeEscada2M1++pegaEscada3M1++poeEscada3M1++fimMapa1
-
+movimentosM1 = 
+  [
+    AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,InterageCaixa,AndarEsquerda,AndarEsquerda,
+    AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,Trepar,AndarDireita,AndarDireita,
+    AndarEsquerda,InterageCaixa,AndarEsquerda,Trepar,AndarDireita,InterageCaixa,Trepar,Trepar,InterageCaixa,AndarEsquerda,
+    AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,InterageCaixa,
+    AndarEsquerda,Trepar,InterageCaixa,AndarDireita,Trepar,AndarDireita,InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,
+    AndarEsquerda,InterageCaixa,AndarDireita,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
+    AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,Trepar,
+    InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,AndarDireita,Trepar,Trepar,AndarDireita,
+    InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,Trepar,InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda
+  ]
 
 mapaFAQ1AposMov :: Mapa
 mapaFAQ1AposMov =

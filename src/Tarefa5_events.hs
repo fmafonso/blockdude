@@ -1,3 +1,11 @@
+{- |
+Module      : Tarefa5_events
+Description : Processa os eventos do jogo
+Copyright   : João Gomes Dias de Faria <a100553@alunos.uminho.pt>;
+            : Francisco Manuel Afonso  <a100691@alunos.uminho.pt>;
+
+Módulo para a realização da Tarefa 1 do projeto de LI1 em 2021/22.
+-}
 module Tarefa5_events where
 
 import Data.Maybe
@@ -18,12 +26,9 @@ event ev ((ModoJogo estadoJogo n m), niveis, texturas) = return (eventModoJogo e
 event ev (VenceuJogo, niveis, texturas) = return (eventVenceuJogo ev (VenceuJogo, niveis, texturas))
 event ev (GuardaBlockDude, niveis, texturas) = eventGuardar ev (GuardaBlockDude, niveis, texturas)
 event ev (MenuDefinicoes m, niveis, texturas) = return (eventDefinicoes ev ((MenuDefinicoes m), niveis, texturas))
+event ev (MenuCreditos, niveis, texturas) = return (eventCreditos ev (MenuCreditos, niveis, texturas))
 
 eventMenu :: Event -> BlockDude -> BlockDude
--- eventMenu blockdude = do
---     (EventKey (SpecialKey k) Down _ _ ) (MainMenu o, n, t) <- blockdude
---     when (k == KeyUp && o == Jogar) return (MainMenu Sair, n, t)
---     when (k == )
 eventMenu (EventKey (SpecialKey KeyUp) Down  _ _ ) (MainMenu Jogar, niveis, texturas) = (MainMenu Sair, niveis, texturas)
 eventMenu (EventKey (SpecialKey KeyUp) Down _ _ ) (MainMenu Guardar, niveis, texturas) = (MainMenu Jogar, niveis, texturas)
 eventMenu (EventKey (SpecialKey KeyUp) Down _ _ ) (MainMenu OpcaoDefinicoes, niveis, texturas) = (MainMenu Guardar, niveis, texturas)
@@ -34,13 +39,11 @@ eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Guardar, niveis, t
 eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu OpcaoDefinicoes, niveis, texturas) = (MainMenu Creditos, niveis, texturas)
 eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Creditos, niveis, texturas) = (MainMenu Sair, niveis, texturas)
 eventMenu (EventKey (SpecialKey KeyDown) Down _ _ ) (MainMenu Sair, niveis, texturas) = (MainMenu Jogar, niveis, texturas)
-eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Sair, niveis, texturas) = undefined
 eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu OpcaoDefinicoes, niveis, texturas) = (MenuDefinicoes PackTexturas, niveis, texturas)
 eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Jogar, (niveis, atual), texturas) = (PlayMenu atual, (niveis, atual), texturas)
 eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Guardar, niveis, texturas) = (GuardaBlockDude, niveis, texturas)
-    -- do
-    -- saveBlockDude (MainMenu Guardar, niveis, texturas)
-    -- return (MainMenu Guardar, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Creditos, niveis, texturas) = (MenuCreditos, niveis, texturas)
+eventMenu (EventKey (SpecialKey KeyEnter) Down _ _ ) (MainMenu Sair, niveis, texturas) = undefined
 eventMenu _ bd = bd
 
 eventGuardar :: Event -> BlockDude -> IO BlockDude
@@ -102,15 +105,9 @@ eventDefinicoes (EventKey (SpecialKey KeyLeft) Down _ _ ) (MenuDefinicoes PackTe
     | otherwise = (MenuDefinicoes PackTexturas, niveis, (texturas, atual-1))
 eventDefinicoes _ blockdude = blockdude
 
-
-
-
-
-
-
-
-
-
+eventCreditos :: Event -> BlockDude -> BlockDude
+eventCreditos (EventKey _ Down _ _ ) (MenuCreditos, niveis, texturas) = (MainMenu Jogar, niveis, texturas)
+eventCreditos _ blockdude = blockdude
 
 fst3 :: (a, b, c) -> a
 fst3 (x, y, z) = x

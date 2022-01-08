@@ -1,4 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
+{- |
+Module      : Tarefa5_io
+Description : Lê e escreve o jogo em disco
+Copyright   : João Gomes Dias de Faria <a100553@alunos.uminho.pt>;
+            : Francisco Manuel Afonso  <a100691@alunos.uminho.pt>;
+
+Módulo para a realização da Tarefa 1 do projeto de LI1 em 2021/22.
+-}
 
 module Tarefa5_io where
 
@@ -144,6 +152,7 @@ loadTextura "back" = TexturaBack
 loadTextura "nivel" = TexturaNivel
 loadTextura "venceu" = TexturaVenceu
 loadTextura "guardou" = TexturaGuardou
+loadTextura "creditosM" = TexturaCreditosM
 loadTextura t
     | Data.List.isPrefixOf "numeroR" t = TexturaNumeroR (digitToInt (Prelude.last t))
     | Data.List.isPrefixOf "numero" t = TexturaNumero (digitToInt (Prelude.last t))
@@ -176,6 +185,7 @@ saveTextura TexturaBack = "back"
 saveTextura TexturaNivel = "nivel"
 saveTextura TexturaVenceu = "venceu"
 saveTextura TexturaGuardou = "guardou"
+saveTextura TexturaCreditosM = "creditosM"
 saveTextura (TexturaNumeroR x) = "numeroR" ++ show x
 saveTextura (TexturaNumero x) = "numero" ++ show x
 
@@ -294,10 +304,3 @@ saveBlockDude :: BlockDude -> IO ()
 saveBlockDude blockdude = do
     let json = saveBlockDudeAux blockdude
     Char8.writeFile "../data/blockdude.json" (encode json)
-
-
-
--- main = do
---     blockdude <- loadBlockDude
---     saveBlockDude (fromJust blockdude)
-

@@ -28,10 +28,10 @@ mapaFAQ2r =
 jogoFAQ2 :: Jogo
 jogoFAQ2 = Jogo mapaFAQ2r (Jogador (16,5) Este False)
 
-movimentosM2 = [
-  AndarEsquerda,InterageCaixa,AndarEsquerda,InterageCaixa,Trepar,Trepar,AndarEsquerda,Trepar,
-  AndarEsquerda,AndarDireita,InterageCaixa,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,
-  InterageCaixa,Trepar,Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda
+movimentosM2 = 
+  [ AndarEsquerda,InterageCaixa,AndarEsquerda,InterageCaixa,Trepar,Trepar,AndarEsquerda,
+    InterageCaixa,AndarEsquerda,AndarEsquerda,Trepar,AndarEsquerda,AndarEsquerda,InterageCaixa,Trepar,
+    Trepar,AndarEsquerda,AndarEsquerda,AndarEsquerda
   ]
 
 mapaFAQ2AposMov :: Mapa

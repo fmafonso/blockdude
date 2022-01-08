@@ -19,6 +19,7 @@ $ ghci -i="src" -i="tests" tests/Tests.hs
 >>> runTestsT2 -- Correr os testes tarefa 2
 >>> runTestsT3 -- Correr os testes tarefa 3
 >>> runTestsT4 -- Correr os testes tarefa 4
+>>> runTestsT6 -- Correr os testes tarefa 6
 >>> runAllTests -- Correr todos os testes
 ```
 
